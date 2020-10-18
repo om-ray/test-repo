@@ -117,8 +117,8 @@ let Player = function (props) {
     }
     if (this.attacking) {
       let newBullet = new Bullet({
-        x: this.x,
-        y: this.y,
+        x: this.x + this.width / 2,
+        y: this.y + this.height / 2,
         width: 5,
         height: 5,
         direction: this.lastDirection,
