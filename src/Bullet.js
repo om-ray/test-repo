@@ -18,6 +18,7 @@ let Bullet = function (props) {
   };
 
   this.draw = function () {
+    ctx.fillStyle = "black";
     ctx.fillRect(this.x, this.y, this.width, this.height);
   };
 
@@ -34,6 +35,16 @@ let Bullet = function (props) {
     if (this.direction === "right") {
       this.x += this.speed;
     }
+    this.update();
+  };
+
+  this.update = function () {
+    this.collisionBox = {
+      x: this.x,
+      y: this.y,
+      xMax: this.x + this.width,
+      yMax: this.y + this.height,
+    };
   };
 };
 

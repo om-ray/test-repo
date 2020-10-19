@@ -1,6 +1,7 @@
-import { actionLogic, createPlayer } from "./MainLogic";
+import { actionLogic, checkCollision, createPlayer } from "./MainLogic";
 let canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
+let PlayerList = [];
 
 function resizeCanvas() {
   let width = document.documentElement.clientWidth - 25;
@@ -10,15 +11,3 @@ function resizeCanvas() {
 }
 
 resizeCanvas();
-createPlayer();
-let newPlayer = createPlayer();
-
-let drawingLoop = function () {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  actionLogic();
-  newPlayer.draw();
-};
-
-setInterval(() => {
-  drawingLoop();
-}, 10);

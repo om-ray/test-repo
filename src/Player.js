@@ -1,9 +1,8 @@
 import Bullet from "./Bullet";
-
 let canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
 let playerSpeed = 2;
-let playerDamage = 5;
+let playerDamage = 1;
 let Img = {};
 
 let Male1 = function () {
@@ -36,6 +35,10 @@ let Female2 = function () {
   Img.player.onload = () => {
     return Img.player;
   };
+};
+
+Math.radians = function (degrees) {
+  return (degrees * Math.PI) / 180;
 };
 
 let sprites = [Male1, Male2, Female1, Female2];
@@ -94,6 +97,18 @@ let Player = function (props) {
     }
   };
 
+  this.drawHealthBar = function () {
+    let healthBar = new HealthBar({
+      x: this.x + this.width + 10,
+      y: this.y,
+      width: 15,
+      value: this.health,
+      thickness: 2,
+    });
+
+    healthBar.draw();
+  };
+
   this.action = () => {
     if (this.direction.up) {
       this.sy = 144;
@@ -128,6 +143,54 @@ let Player = function (props) {
       newBullet.draw();
     }
     this.resetSx();
+    this.drawHealthBar();
+    this.update();
+  };
+
+  this.update = function () {
+    this.collisionBox = {
+      x: this.x,
+      y: this.y,
+      xMax: this.x + this.width,
+      yMax: this.y + this.height,
+    };
+    if (this.health <= 0) {
+      this.health = this.healthMax;
+      this.x = Math.floor(Math.random() * canvas.width);
+      this.y = Math.floor(Math.random() * canvas.height);
+    }
+  };
+};
+
+let HealthBar = function (props) {
+  let p = props;
+  this.x = p.x;
+  this.y = p.y;
+  this.width = p.width;
+  this.radius = this.width;
+  this.value = p.value;
+  this.thickness = p.thickness;
+
+  this.draw = function () {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius, -Math.PI / 2, Math.radians(this.value * 3.6) - Math.PI / 2, false);
+    ctx.arc(this.x, this.y, this.radius - this.thickness, Math.radians(this.value * 3.6) - Math.PI / 2, -Math.PI / 2, true);
+    ctx.lineWidth = 1;
+    ctx.fillStyle = "black";
+    ctx.font = "10px courier";
+    ctx.fillText(this.value, this.x - 9, this.y + 3);
+
+    if (this.value >= 75) {
+      ctx.fillStyle = "green";
+    } else if (this.value >= 50) {
+      ctx.fillStyle = "gold";
+    } else if (this.value >= 25) {
+      ctx.fillStyle = "orange";
+    } else {
+      ctx.fillStyle = "red";
+    }
+    ctx.closePath();
+    ctx.fill();
   };
 };
 
