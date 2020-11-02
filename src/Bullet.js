@@ -10,6 +10,7 @@ let Bullet = function (props) {
   this.height = p.height;
   this.speed = bulletSpeed;
   this.direction = p.direction;
+  this.shooter = p.shooter;
   this.collisionBox = {
     x: this.x,
     y: this.y,
@@ -18,7 +19,7 @@ let Bullet = function (props) {
   };
 
   this.draw = function () {
-    ctx.fillStyle = "black";
+    ctx.fillStyle = "red";
     ctx.fillRect(this.x, this.y, this.width, this.height);
   };
 
