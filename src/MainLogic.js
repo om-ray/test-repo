@@ -89,14 +89,7 @@ export let checkCollision = function (object1, object2) {
   let xMax2 = object2.collisionBox.xMax;
   let yMax2 = object2.collisionBox.yMax;
 
-  // ctx.strokeStyle = "red";
-  // ctx.strokeRect(x1, y1, xMax1 - x1, yMax1 - y1);
-  // ctx.strokeRect(x2, y2, xMax2 - x2, yMax2 - y2);
-  if (object1.shooter && object2.id) {
-    if (object1.shooter !== object2.id) {
-      if (x1 <= xMax2 && xMax1 >= x2 && y1 <= yMax2 && yMax1 >= y2) {
-        return true;
-      }
-    }
+  if (x1 <= xMax2 && xMax1 >= x2 && y1 <= yMax2 && yMax1 >= y2) {
+    return true;
   }
 };

@@ -1,7 +1,7 @@
 import Bullet from "./Bullet";
 let canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
-let playerSpeed = 2;
+let playerSpeed = 1;
 let playerDamage = 1;
 let Img = {};
 
@@ -84,6 +84,9 @@ let Player = function (props) {
       this.bulletList[i].move();
       this.bulletList[i].draw();
     }
+    this.drawAccesories();
+    this.resetBulletlist();
+    this.action();
   };
 
   this.delete = () => {
@@ -96,79 +99,86 @@ let Player = function (props) {
     }
   };
 
-  if (this.type == "main") {
-    this.resetBulletlist = function () {
-      if (this.bulletList.length >= 100) {
-        this.bulletList.splice(0, 1);
-      }
-    };
+  this.drawAccesories = function () {
+    let healthBar = new HealthBar({
+      x: this.x - 15,
+      y: this.y + 5,
+      width: 15,
+      value: this.health,
+      thickness: 2,
+    });
 
-    this.drawAccesories = function () {
-      let healthBar = new HealthBar({
-        x: this.x - 15,
-        y: this.y + 5,
-        width: 15,
-        value: this.health,
-        thickness: 2,
+    let score = new Score({
+      x: this.x,
+      y: this.y + 35,
+      value: this.score,
+    });
+
+    let usernameLabel = new UsernameLabel({
+      x: this.x + 5,
+      y: this.y,
+      value: this.id,
+      main: this.type == "main" ? true : false,
+    });
+
+    ctx.strokeStyle = "red";
+    ctx.strokeRect(
+      this.collisionBox.x1,
+      this.collisionBox.y1,
+      this.collisionBox.xMax1 - this.collisionBox.x1,
+      this.collisionBox.yMax1 - this.collisionBox.y1
+    );
+
+    healthBar.draw();
+    score.draw();
+    usernameLabel.draw();
+  };
+
+  this.resetBulletlist = function () {
+    if (this.bulletList.length >= 500) {
+      this.bulletList.splice(0, 1);
+    }
+  };
+
+  this.action = () => {
+    if (this.direction.up) {
+      this.sy = 144;
+      this.sx += this.width;
+      this.y -= this.speed;
+    }
+    if (this.direction.left) {
+      this.sy = 48;
+      this.sx += this.width;
+      this.x -= this.speed;
+    }
+    if (this.direction.down) {
+      this.sy = 0;
+      this.sx += this.width;
+      this.y += this.speed;
+    }
+    if (this.direction.right) {
+      this.sy = 96;
+      this.sx += this.width;
+      this.x += this.speed;
+    }
+    if (this.attacking) {
+      let newBullet = new Bullet({
+        x: this.x + this.width / 2,
+        y: this.y + this.height / 2,
+        width: 2,
+        height: 2,
+        direction: this.lastDirection,
+        shooter: this.id,
+        substitute: false,
       });
 
-      let score = new Score({
-        x: this.x,
-        y: this.y + 35,
-        value: this.score,
-      });
-
-      let usernameLabel = new UsernameLabel({
-        x: this.x + 5,
-        y: this.y,
-        value: this.username,
-      });
-
-      healthBar.draw();
-      score.draw();
-      usernameLabel.draw();
-    };
-
-    this.action = () => {
-      if (this.direction.up) {
-        this.sy = 144;
-        this.sx += this.width;
-        this.y -= this.speed;
-      }
-      if (this.direction.left) {
-        this.sy = 48;
-        this.sx += this.width;
-        this.x -= this.speed;
-      }
-      if (this.direction.down) {
-        this.sy = 0;
-        this.sx += this.width;
-        this.y += this.speed;
-      }
-      if (this.direction.right) {
-        this.sy = 96;
-        this.sx += this.width;
-        this.x += this.speed;
-      }
-      if (this.attacking) {
-        let newBullet = new Bullet({
-          x: this.x + this.width / 2,
-          y: this.y + this.height / 2,
-          width: 2,
-          height: 2,
-          direction: this.lastDirection,
-          shooter: this.id,
-        });
-
-        this.bulletList.push(newBullet);
-        newBullet.draw();
-      }
-      this.resetSx();
-      this.drawAccesories();
-      this.resetBulletlist();
-      this.update();
-    };
-  }
+      this.bulletList.push(newBullet);
+      newBullet.draw();
+    }
+    this.resetSx();
+    this.resetBulletlist();
+    this.update();
+  };
 
   this.update = function () {
     this.collisionBox = {
@@ -237,11 +247,16 @@ let UsernameLabel = function (props) {
   this.x = p.x;
   this.y = p.y;
   this.value = p.value;
+  this.main = p.main;
 
   this.draw = function () {
-    ctx.fillStyle = "black";
     ctx.textAlign = "left";
     ctx.font = "15px courier";
+    if (this.main) {
+      ctx.fillStyle = "#363930";
+      ctx.fillRect(this.x - 3, this.y - 12, this.value.toString().length * 10, 15);
+    }
+    ctx.fillStyle = this.main ? "rgb(225 103 253)" : "red";
     ctx.fillText(this.value, this.x, this.y);
   };
 };

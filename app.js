@@ -65,8 +65,16 @@ io.on("connection", function (socket) {
     socket.broadcast.emit("players updated info", playerInfo);
   });
 
+  socket.on("updated bullet info", function (bulletInfo) {
+    socket.broadcast.emit("bullets updated info", bulletInfo);
+  });
+
   socket.on("me", function (data) {
     io.to(data.connector).emit("other player", data.me);
+  });
+
+  socket.on("player health", function (health, id) {
+    socket.broadcast.emit("updated player health", health, id);
   });
 
   socket.on("disconnect", function () {

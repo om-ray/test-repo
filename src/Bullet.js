@@ -1,6 +1,6 @@
 let canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
-let bulletSpeed = 5;
+let bulletSpeed = 10;
 
 let Bullet = function (props) {
   let p = props;
@@ -11,6 +11,8 @@ let Bullet = function (props) {
   this.speed = bulletSpeed;
   this.direction = p.direction;
   this.shooter = p.shooter;
+  this.substitute = p.substitute;
+  this.color = "red";
   this.collisionBox = {
     x: this.x,
     y: this.y,
@@ -19,7 +21,7 @@ let Bullet = function (props) {
   };
 
   this.draw = function () {
-    ctx.fillStyle = "red";
+    ctx.fillStyle = this.color;
     ctx.fillRect(this.x, this.y, this.width, this.height);
   };
 
