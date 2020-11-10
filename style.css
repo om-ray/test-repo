@@ -2,12 +2,380 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  font-family: "Avenir";
+  color: #e6e6e6;
   overflow: none;
 }
 
-#gameCanvas {
+*:focus {
+  outline: none;
+}
+
+body {
+  overflow: hidden;
+}
+
+#canvas {
   position: absolute;
   left: 0;
   top: 0;
-  border: 1px solid black;
+  overflow: hidden;
+  max-width: 3840px;
+  max-height: 2160px;
+  background-color: #fff;
+}
+
+#logInSignUpContainer {
+  display: flex;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 100vw;
+  justify-content: center;
+  align-items: center;
+  justify-items: center;
+  align-items: center;
+}
+
+#logInSignUpForm {
+  z-index: 4;
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  justify-items: center;
+  align-items: center;
+  flex-direction: column;
+  min-width: 300px;
+  max-width: 700px;
+  max-height: 900px;
+  width: 30%;
+  height: 50%;
+  border: none;
+  border-radius: 50px;
+}
+
+#leaderboardBtn {
+  z-index: 10;
+  position: absolute;
+  top: 20px;
+  right: 25px;
+  padding: 10px;
+}
+
+#pastWinnersBtn {
+  z-index: 10;
+  position: absolute;
+  bottom: 20px;
+  right: 25px;
+  padding: 10px;
+}
+
+#dateRowHeaderBtn,
+#scoreRowHeaderBtn {
+  border: hidden;
+  font-weight: bolder;
+}
+
+#leaderboardContainer {
+  display: block;
+  z-index: 10;
+  position: absolute;
+  top: 70px;
+  right: 25px;
+  padding: 10px;
+  background-color: #000000;
+  opacity: 0.7;
+  border-radius: 20px;
+  padding: 5px;
+}
+
+#pastWinnersContainer {
+  display: block;
+  z-index: 10;
+  position: absolute;
+  bottom: 70px;
+  right: 25px;
+  padding: 10px;
+  background-color: #000000;
+  opacity: 0.7;
+  border-radius: 20px;
+  padding: 5px;
+}
+
+tr {
+  display: flex;
+  justify-content: space-evenly;
+  border-radius: 20px;
+  width: 500px;
+  margin: 10px 5px;
+}
+
+th {
+  display: flex;
+  justify-content: space-evenly;
+  border-radius: 20px;
+  width: 100%;
+}
+
+td {
+  display: flex;
+  justify-content: space-evenly;
+  border-radius: 20px;
+  width: 100%;
+}
+
+tr:nth-child(even) {
+  background-color: #3d3d3d;
+}
+
+tr:nth-child(odd:not(1)) {
+  background-color: #616161;
+}
+
+#title {
+  z-index: 5;
+  font-size: 4rem;
+  font-family: "megrim";
+  position: absolute;
+  top: 10%;
+  padding: 2% 5%;
+  background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='white' stroke-width='4' stroke-dasharray='6%2c 40%2c 1' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+}
+
+@media only screen and (max-width: 400px) {
+  #title {
+    background-image: none;
+  }
+}
+
+#LogInOrSignUp {
+  position: absolute;
+  top: 5%;
+}
+
+#tryingToCheatDiv {
+  background: black;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+}
+
+input {
+  padding: 2% 10% 2% 3%;
+  width: 80%;
+  max-width: 500px;
+  margin: 50px;
+  background-color: rgba(0, 0, 0, 0.5);
+  border: none;
+  font-size: 1rem;
+  border-bottom: solid 1px rgb(160, 160, 160);
+  transition: all 0.2s ease-in-out;
+}
+
+input:focus {
+  border-bottom: solid 1px rgb(0, 126, 148);
+  transform: scale(1.2, 1.2);
+}
+
+input:hover {
+  border-bottom: solid 1px rgb(0, 185, 218);
+}
+
+#signUpOrLogInContainer {
+  position: absolute;
+  bottom: -10%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  justify-items: center;
+  align-items: center;
+  width: 100%;
+}
+
+#submitButton {
+  margin-top: -2%;
+  z-index: 10;
+  max-height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2% 5% 2% 5%;
+  color: rgb(255, 255, 255);
+  background-color: #000;
+  border: solid 2px rgb(160, 160, 160);
+  border-radius: 100px;
+  transition: all 0.2s ease-in-out;
+}
+
+#signUpOrLogInButtonText {
+  font-weight: normal;
+  margin-bottom: 10px;
+}
+
+#signUpOrLogInButton {
+  z-index: 10;
+  max-height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2% 5% 2% 5%;
+  color: rgb(255, 255, 255);
+  background-color: #000;
+  border: solid 2px rgb(160, 160, 160);
+  border-radius: 100px;
+  transition: all 0.2s ease-in-out;
+}
+
+button {
+  max-height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2% 5% 2% 5%;
+  color: rgb(255, 255, 255);
+  background-color: #000;
+  border: solid 2px rgb(160, 160, 160);
+  border-radius: 100px;
+  transition: all 0.2s ease-in-out;
+}
+
+#modalBackdrop {
+  position: absolute;
+  width: 100vw;
+  height: 100vh;
+  top: 0;
+  left: 0;
+  z-index: 20;
+  display: none;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+#verificationModalContainer {
+  z-index: 20;
+  position: relative;
+  color: #000;
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #000;
+  border: 1px solid white;
+  border-radius: 10px;
+  padding: 2%;
+}
+
+#verificationTitleContainer {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 30px;
+}
+
+#closeVerificationModalBtn {
+  width: 20px;
+  height: 20px;
+  font-family: "Megrim";
+  padding: 15px;
+  border: none;
+  position: absolute;
+  right: 15px;
+  top: 15px;
+  stroke: #e6e6e6;
+}
+
+#verificationContentContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+button:hover {
+  outline: none;
+  cursor: pointer;
+  filter: invert(100%);
+  transform: scale(1.2, 1.2);
+}
+
+button:focus {
+  outline: none;
+  color: rgb(255, 255, 255);
+  transform: scale(1.2, 1.2);
+  background-color: #000;
+}
+
+@keyframes move-twink-back {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: -10000px 5000px;
+  }
+}
+@-webkit-keyframes move-twink-back {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: -10000px 5000px;
+  }
+}
+@-moz-keyframes move-twink-back {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: -10000px 5000px;
+  }
+}
+@-ms-keyframes move-twink-back {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: -10000px 5000px;
+  }
+}
+
+.stars,
+.twinkling {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.stars {
+  background: #000 url(http://www.script-tutorials.com/demos/360/images/stars.png) repeat top center;
+  z-index: 0;
+}
+
+.twinkling {
+  background: transparent url(http://www.script-tutorials.com/demos/360/images/twinkling.png) repeat top center;
+  z-index: 1;
+
+  -moz-animation: move-twink-back 200s linear infinite;
+  -ms-animation: move-twink-back 200s linear infinite;
+  -o-animation: move-twink-back 200s linear infinite;
+  -webkit-animation: move-twink-back 200s linear infinite;
+  animation: move-twink-back 200s linear infinite;
 }

@@ -37,6 +37,9 @@ let Female2 = function () {
   };
 };
 
+Img.forcefield = new Image();
+Img.forcefield.src = "../images/shield_Edit.png";
+
 Math.radians = function (degrees) {
   return (degrees * Math.PI) / 180;
 };
@@ -62,6 +65,7 @@ let Player = function (props) {
   this.sx = 0;
   this.sy = 0;
   this.type = p.type;
+  this.loggedIn = false;
   this.bulletList = [];
   this.collisionBox = {
     x: this.x,
@@ -80,6 +84,9 @@ let Player = function (props) {
 
   this.draw = () => {
     ctx.drawImage(Img.player, this.sx, this.sy, this.width, this.height, this.x, this.y, this.width, this.height);
+    if (this.loggedIn == false) {
+      ctx.drawImage(Img.forcefield, this.x - this.width / 1.4, this.y - this.height / 4, this.height + 30, this.height + 30);
+    }
     for (let i in this.bulletList) {
       this.bulletList[i].move();
       this.bulletList[i].draw();
@@ -117,7 +124,7 @@ let Player = function (props) {
     let usernameLabel = new UsernameLabel({
       x: this.x + 5,
       y: this.y,
-      value: this.id,
+      value: this.username,
       main: this.type == "main" ? true : false,
     });
 
@@ -180,6 +187,12 @@ let Player = function (props) {
     this.update();
   };
 
+  this.respawn = function () {
+    this.health = this.healthMax;
+    this.x = Math.floor(Math.random() * canvas.width);
+    this.y = Math.floor(Math.random() * canvas.height);
+  };
+
   this.update = function () {
     this.collisionBox = {
       x: this.x,
@@ -188,9 +201,7 @@ let Player = function (props) {
       yMax: this.y + this.height,
     };
     if (this.health <= 0) {
-      this.health = this.healthMax;
-      this.x = Math.floor(Math.random() * canvas.width);
-      this.y = Math.floor(Math.random() * canvas.height);
+      this.respawn();
     }
   };
 };
@@ -254,7 +265,7 @@ let UsernameLabel = function (props) {
     ctx.font = "15px courier";
     if (this.main) {
       ctx.fillStyle = "#363930";
-      ctx.fillRect(this.x - 3, this.y - 12, this.value.toString().length * 10, 15);
+      ctx.fillRect(this.x - 3, this.y - 12, this.value.toString().length * 11, 15);
     }
     ctx.fillStyle = this.main ? "rgb(225 103 253)" : "red";
     ctx.fillText(this.value, this.x, this.y);

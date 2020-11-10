@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="adminStyle.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="apple-touch-icon" sizes="180x180" href="../images/favicon//apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon//favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="../images/favicon/favicon-16x16.png" />
+    <title>Admin Panel</title>
+  </head>
+  <body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.1/socket.io.js"></script>
+    <div id="adminPanelContainer">
+      <div id="adminPanelTitleContainer">
+        <h1 id="title">AdmiN PaneL</h1>
+      </div>
+      <div id="adminPanelTableContainer">
+        <div id="adminPanelButtonsContainer">
+          <button id="refreshButton"><img src="../images/refresh-cw.svg" id="refreshIcon" />Refresh</button>
+        </div>
+        <table id="adminPanelTable">
+          <thead id="adminPanelTableHead">
+            <tr id="headers">
+              <th id="username">Username</th>
+              <th id="email">E-mail</th>
+              <th id="ip">IP</th>
+              <th id="geolocation">Geo-location</th>
+              <th id="health">Health</th>
+              <th id="wins">Wins</th>
+              <th id="losses">Losses</th>
+            </tr>
+          </thead>
+          <tbody id="adminPanelBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <script src="./admin.js"></script>
+  </body>
+</html>

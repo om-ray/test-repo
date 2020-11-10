@@ -1,0 +1,143 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: "Avenir";
+  color: #e6e6e6;
+  overflow: none;
+}
+
+*:focus {
+  outline: none;
+}
+
+body {
+  overflow: hidden;
+  background-color: #000;
+}
+
+tr {
+  display: flex;
+  justify-content: space-evenly;
+  border-radius: 20px;
+  width: 90vw;
+  margin: 10px 5px;
+  height: 100px;
+  overflow: auto;
+}
+
+#adminPanelTableHead > tr {
+  display: flex;
+  justify-content: space-evenly;
+  border-radius: 20px;
+  width: 90vw;
+  margin: 10px 5px;
+  height: auto !important;
+  overflow: auto;
+}
+
+th {
+  display: flex;
+  justify-content: space-evenly;
+  border-radius: 20px;
+  width: 100%;
+}
+
+td {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  border-radius: 20px;
+  width: 100%;
+}
+
+tr:nth-child(even) {
+  background-color: #3d3d3d;
+}
+
+tr:nth-child(odd) {
+  background-color: #616161;
+}
+
+#headers {
+  background-color: #000;
+}
+
+#title {
+  z-index: 5;
+  font-size: 4rem;
+  font-family: "megrim";
+  padding: 2% 5%;
+  width: 500px;
+  text-align: center;
+}
+
+#refreshIcon {
+  margin: 0px 10px 0px 0px;
+}
+
+#adminPanelButtonsContainer {
+  background-color: rgb(32, 32, 32);
+  border-radius: 8px;
+  padding: 20px;
+  width: 90vw;
+}
+
+#adminPanelContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+#adminPanelTitleContainer {
+  display: flex;
+}
+
+input {
+  padding: 2% 10% 2% 3%;
+  width: 80%;
+  max-width: 500px;
+  margin: 50px;
+  background-color: rgba(0, 0, 0, 0.5);
+  border: none;
+  font-size: 1rem;
+  border-bottom: solid 1px rgb(160, 160, 160);
+  transition: all 0.2s ease-in-out;
+}
+
+input:focus {
+  border-bottom: solid 1px rgb(0, 126, 148);
+  transform: scale(1.2, 1.2);
+}
+
+input:hover {
+  border-bottom: solid 1px rgb(0, 185, 218);
+}
+
+button {
+  max-height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1% 1% 1% 1%;
+  color: rgb(255, 255, 255);
+  background-color: rgb(12, 145, 0);
+  border: none;
+  border-radius: 10px;
+  transition: all 0.2s ease-in-out;
+}
+
+button:hover {
+  outline: none;
+  cursor: pointer;
+  background-color: rgb(4, 53, 0);
+  transform: scale(1.2, 1.2);
+}
+
+button:active {
+  outline: none;
+  color: rgb(255, 255, 255);
+  transform: scale(1, 1);
+  background-color: rgb(12, 145, 0);
+}
