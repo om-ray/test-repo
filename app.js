@@ -341,9 +341,9 @@ io.on("connection", function (socket) {
     io.to(data.connector).emit("other player", data.me);
   });
 
-  socket.on("player health", async function (health, username, id) {
+  socket.on("player health", function (health, username, id) {
     socket.broadcast.emit("updated player health", health, id);
-    await PlayerModel.updateOne({ Username: username }, { $set: { Health: health } }, { upsert: false }).then((res) => {});
+    PlayerModel.updateOne({ Username: username }, { $set: { Health: health } }, { upsert: false }).then((res) => {});
   });
 
   socket.on("player score", function (score, username, id) {
@@ -365,6 +365,10 @@ io.on("connection", function (socket) {
           }
         });
       });
+  });
+
+  socket.on("can i have the leaderboard values", function () {
+    socket.emit("you already have them");
   });
 
   socket.on("send past winners", function () {
@@ -401,7 +405,7 @@ io.on("connection", function (socket) {
         let player = playerList[i];
         PlayerModel.updateOne({ Username: player.username }, { $set: { LoggedIn: false } }).then((res) => {
           if (res) {
-            console.log("logged player out");
+            console.log(`logged ${player.username} out`);
           }
           if (!res) {
             console.log("could not log player out");
@@ -424,16 +428,6 @@ io.on("connection", function (socket) {
 setInterval(() => {
   if (matchIsStarting == true) {
     io.emit("Match starting");
-    ProgressModel.find({}, (err, res) => {
-      if (res) {
-        for (let i in res) {
-          let arr = res[i];
-          if (arr.DatesWon.length > 0) {
-            io.emit("Past winners clear", arr.DatesWon);
-          }
-        }
-      }
-    });
   }
   if (betweenMatches == false) {
     io.emit("current time", {

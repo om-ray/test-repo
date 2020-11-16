@@ -1,6 +1,6 @@
 let adminPanelBody = document.getElementById("adminPanelBody");
 let refreshButton = document.getElementById("refreshButton");
-let socket = io({ reconnection: false });
+let socket = io({ reconnection: true });
 
 socket.emit("gimme all the data");
 setInterval(() => {

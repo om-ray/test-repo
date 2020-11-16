@@ -8,7 +8,7 @@ let h = window.innerHeight;
 export let createPlayer = function (type) {
   type == "main"
     ? (newPlayer = new Player({
-        username: "null",
+        username: "",
         email: "null",
         x: w / 2,
         y: h / 2,
@@ -18,7 +18,7 @@ export let createPlayer = function (type) {
       }))
     : type == "other"
     ? (newPlayer = new Player({
-        username: "null",
+        username: "",
         email: "null",
         x: w / 2,
         y: h / 2,
@@ -66,6 +66,36 @@ export function roundRect(ctx, x, y, width, height, radius, fill, stroke, fillco
     ctx.stroke();
   }
 }
+
+export let removeDupes = function (arr) {
+  return [...new Set(arr)];
+};
+
+export let sortArray = async function (arr, fallback) {
+  await arr.sort((a, b) => {
+    if (fallback) {
+      if (a.score !== b.score) {
+        return b.score - a.score;
+      } else if (a.score == b.score) {
+        if (a.username < b.username) {
+          return -1;
+        }
+        if (a.username > b.username) {
+          return 1;
+        }
+        return 0;
+      }
+    } else if (!fallback) {
+      return b.score - a.score;
+    }
+  });
+};
+
+export let sortArrayByDate = async function (arr) {
+  await arr.sort((a, b) => {
+    return new Date(b.date) - new Date(a.date);
+  });
+};
 
 export let actionLogic = function (Player) {
   document.onkeydown = (e) => {

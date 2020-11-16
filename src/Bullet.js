@@ -1,13 +1,15 @@
 let canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
 let bulletSpeed = 10;
+let width = 1;
+let height = 1;
 
 let Bullet = function (props) {
   let p = props;
   this.x = p.x;
   this.y = p.y;
-  this.width = p.width;
-  this.height = p.height;
+  this.width = width;
+  this.height = height;
   this.speed = bulletSpeed;
   this.direction = p.direction;
   this.shooter = p.shooter;
@@ -39,6 +41,13 @@ let Bullet = function (props) {
       this.x += this.speed;
     }
     this.update();
+  };
+
+  this.setValues = function (x, y, substitute) {
+    this.x = x;
+    this.y = y;
+    this.substitute = substitute;
+    // console.log(`x: ${x}, y: ${y}`);
   };
 
   this.update = function () {

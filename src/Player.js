@@ -1,7 +1,7 @@
 import Bullet from "./Bullet";
 let canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
-let playerSpeed = 1;
+let playerSpeed = 2;
 let playerDamage = 1;
 let Img = {};
 
@@ -172,8 +172,6 @@ let Player = function (props) {
       let newBullet = new Bullet({
         x: this.x + this.width / 2,
         y: this.y + this.height / 2,
-        width: 2,
-        height: 2,
         direction: this.lastDirection,
         shooter: this.id,
         substitute: false,

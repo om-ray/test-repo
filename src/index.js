@@ -1,6 +1,6 @@
 import moment from "moment";
 import Bullet from "./Bullet";
-import { actionLogic, checkCollision, createPlayer, roundRect } from "./MainLogic";
+import { actionLogic, checkCollision, createPlayer, roundRect, sortArrayByDate, sortArray, removeDupes } from "./MainLogic";
 let canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
 let LogInOrSignUp = document.getElementById("LogInOrSignUp");
@@ -27,7 +27,6 @@ let dateRowHeader = document.getElementById("dateRowHeaderBtn");
 let scoreRowHeader = document.getElementById("scoreRowHeaderBtn");
 let socket = io({ reconnection: false });
 let PlayerList = [];
-let EnemyList = [];
 let LogIn = true;
 let SignUp = false;
 let loggedIn = false;
@@ -38,7 +37,8 @@ let email = emailInput.value;
 let password = passwordInput.value;
 let parsedTime;
 let usernameAndScoreArray = [];
-let filteredUsernameAndScoreArray = [];
+let filteredUsernameAndScoreArray1 = [];
+let filteredUsernameAndScoreArray2 = [];
 let pastWinnersArray = [];
 let pastWinnersArrayFlattened = [];
 
@@ -114,16 +114,20 @@ submitVerificationCodeBtn.onclick = function () {
 leaderboardBtn.onclick = function () {
   if (leaderboardContainer.style.display === "" || leaderboardContainer.style.display === "none") {
     leaderboardContainer.style.display = "block";
+    leaderboardBtn.blur();
   } else if (leaderboardContainer.style.display === "block") {
     leaderboardContainer.style.display = "none";
+    leaderboardBtn.blur();
   }
 };
 
 pastWinnersBtn.onclick = function () {
   if (pastWinnersContainer.style.display === "" || pastWinnersContainer.style.display === "none") {
     pastWinnersContainer.style.display = "block";
+    pastWinnersBtn.blur();
   } else if (pastWinnersContainer.style.display === "block") {
     pastWinnersContainer.style.display = "none";
+    pastWinnersBtn.blur();
   }
 };
 
@@ -225,47 +229,50 @@ socket.emit("I wish to exist", PlayerList[0]);
 socket.emit("send past winners");
 let mainPlayer = PlayerList[0];
 
+let getLeaderboardValues = function () {
+  socket.emit("can i have the leaderboard values");
+};
+
 socket.on("New connection", function (data) {
   let otherPlayer = createPlayer("other");
   otherPlayer.id = data.player.id;
-  EnemyList.push(otherPlayer);
+  PlayerList.push(otherPlayer);
   socket.emit("me", { me: PlayerList[0], connector: data.connector });
 });
 
 socket.on("players updated info", function (playerData) {
-  EnemyList.forEach((enemy) => {
-    if (enemy.id == playerData.id) {
-      enemy.x = playerData.x;
-      enemy.y = playerData.y;
-      enemy.health = playerData.health;
-      enemy.sx = playerData.sx;
-      enemy.sy = playerData.sy;
-      enemy.score = playerData.score;
-      enemy.username = playerData.username;
-      enemy.email = playerData.email;
-      enemy.loggedIn = playerData.loggedIn;
-      usernameAndScoreArray.push({ username: enemy.username, score: enemy.score });
+  PlayerList.forEach((player) => {
+    if (player.id == playerData.id) {
+      player.x = playerData.x;
+      player.y = playerData.y;
+      player.health = playerData.health;
+      player.sx = playerData.sx;
+      player.sy = playerData.sy;
+      player.score = playerData.score;
+      player.username = playerData.username;
+      player.email = playerData.email;
+      player.loggedIn = playerData.loggedIn;
+      player.lastDirection = playerData.lastDirection;
+      while (player.bulletList.length <= playerData.bulletList) {
+        player.bulletList.push(
+          new Bullet({
+            shooter: player.id,
+            direction: player.lastDirection,
+          })
+        );
+      }
+      usernameAndScoreArray.push({ username: player.username, score: player.score, loggedIn: player.loggedIn });
     }
   });
 });
 
 socket.on("bullets updated info", function (bulletInfo) {
-  EnemyList.forEach((enemy) => {
-    if (enemy.id == bulletInfo.id) {
-      while (enemy.bulletList.length <= bulletInfo.bulletList) {
-        let bullet = new Bullet({
-          x: bulletInfo.bulletX,
-          y: bulletInfo.bulletY,
-          width: bulletInfo.bulletWidth,
-          height: bulletInfo.bulletHeight,
-          direction: bulletInfo.bulletDirection,
-          shooter: bulletInfo.bulletShooter,
-          substitute: true,
-        });
-        enemy.bulletList.push(bullet);
-      }
+  for (let i in PlayerList) {
+    let player = PlayerList[i];
+    if (player.id == bulletInfo.bulletShooter && player.bulletList.length > 0) {
+      player.bulletList[player.bulletList.length - 1].setValues(bulletInfo.bulletX, bulletInfo.bulletY, bulletInfo.bulletSubstitute);
     }
-  });
+  }
 });
 
 let sendPlayerInfo = function () {
@@ -281,23 +288,25 @@ let sendPlayerInfo = function () {
     username: mainPlayer.username,
     email: mainPlayer.email,
     loggedIn: mainPlayer.loggedIn,
+    lastDirection: mainPlayer.lastDirection,
   });
-  usernameAndScoreArray.push({ username: mainPlayer.username, score: mainPlayer.score });
+  usernameAndScoreArray.push({ username: mainPlayer.username, score: mainPlayer.score, loggedIn: mainPlayer.loggedIn });
 };
 
 let sendBulletInfo = function () {
-  socket.emit("updated bullet info", {
-    id: mainPlayer.id,
-    bulletList: mainPlayer.bulletList.length,
-    bulletX: mainPlayer.bulletList[mainPlayer.bulletList.length - 1].x,
-    bulletY: mainPlayer.bulletList[mainPlayer.bulletList.length - 1].y,
-    bulletWidth: mainPlayer.bulletList[mainPlayer.bulletList.length - 1].width,
-    bulletHeight: mainPlayer.bulletList[mainPlayer.bulletList.length - 1].height,
-    bulletDirection: mainPlayer.bulletList[mainPlayer.bulletList.length - 1].direction,
-    bulletShooter: mainPlayer.bulletList[mainPlayer.bulletList.length - 1].shooter,
-    bulletSubstitue: mainPlayer.bulletList[mainPlayer.bulletList.length - 1].substitute,
-  });
+  if (mainPlayer.bulletList.length > 0) {
+    socket.emit("updated bullet info", {
+      bulletX: mainPlayer.bulletList[mainPlayer.bulletList.length - 1].x,
+      bulletY: mainPlayer.bulletList[mainPlayer.bulletList.length - 1].y,
+      bulletShooter: mainPlayer.bulletList[mainPlayer.bulletList.length - 1].shooter,
+      bulletSubstitute: mainPlayer.bulletList[mainPlayer.bulletList.length - 1].substitute,
+    });
+  }
 };
+
+socket.on("you already have them", function () {
+  leaderboardLogic();
+});
 
 socket.on("updated player health", function (health, id) {
   PlayerList.forEach((player) => {
@@ -308,38 +317,33 @@ socket.on("updated player health", function (health, id) {
 });
 
 socket.on("updated player score", function (score, id) {
-  EnemyList.forEach((enemy) => {
-    if (enemy.id == id) {
-      enemy.score = score;
+  PlayerList.forEach((player) => {
+    if (player.id == id) {
+      player.score = score;
     }
   });
 });
 
 let pvpChecker = function () {
-  for (let i in EnemyList) {
-    let enemy = EnemyList[i];
-    for (let u in PlayerList[0].bulletList) {
-      let currentBullet = PlayerList[0].bulletList[u];
-      if (checkCollision(currentBullet, enemy)) {
-        if (enemy.id != mainPlayer.id && currentBullet.shooter == mainPlayer.id && enemy.loggedIn == true) {
-          enemy.health -= 1;
-          socket.emit("player health", enemy.health, enemy.username, enemy.id);
-          if (enemy.health == 0) {
-            setTimeout(() => {
-              mainPlayer.score += 1;
-              enemy.respawn();
-              socket.emit("player score", mainPlayer.score, mainPlayer.username, mainPlayer.id);
-            }, 5);
+  socket.emit("player health", mainPlayer.health, mainPlayer.username, mainPlayer.id);
+  for (let i in PlayerList) {
+    for (let u in PlayerList[i].bulletList) {
+      if (checkCollision(PlayerList[i].bulletList[u], PlayerList[i])) {
+        if (PlayerList[i].id != mainPlayer.id && PlayerList[i].bulletList[u].substitute !== true) {
+          console.log(`colliding with ${PlayerList[i].username}`);
+          PlayerList[i].health -= 1;
+          if (PlayerList[i].health <= 0) {
+            PlayerList[i].respawn();
+            mainPlayer.score += 1;
+            socket.emit("score went up", mainPlayer.score, mainPlayer.username);
           }
-          PlayerList[0].bulletList.splice(u, 1);
-        }
-      }
-    }
-    for (let u in enemy.bulletList) {
-      let currentBullet = enemy.bulletList[u];
-      if (checkCollision(currentBullet, enemy)) {
-        if (currentBullet.shooter == enemy.id) {
-          enemy.bulletList.splice(u, 1);
+          for (let n in mainPlayer.bulletList) {
+            mainPlayer.bulletList.splice(n, 1);
+          }
+          socket.emit("Player health", {
+            id: PlayerList[i].id,
+            health: PlayerList[i].health,
+          });
         }
       }
     }
@@ -349,14 +353,13 @@ let pvpChecker = function () {
 socket.on("other player", function (them) {
   let otherPlayer = createPlayer("other");
   otherPlayer.id = them.id;
-  EnemyList.push(otherPlayer);
-  EnemyList.forEach((enemy) => {
-    if (enemy.id == them.id) {
-      enemy.x = them.x;
-      enemy.y = them.y;
-      enemy.sx = them.sx;
-      enemy.sy = them.sy;
-      usernameAndScoreArray.push({ username: enemy.username, score: enemy.score });
+  PlayerList.push(otherPlayer);
+  PlayerList.forEach((player) => {
+    if (player.id == them.id) {
+      player.x = them.x;
+      player.y = them.y;
+      player.sx = them.sx;
+      player.sy = them.sy;
     }
   });
 });
@@ -387,23 +390,7 @@ socket.on("Match finished", function () {
   }
 });
 
-let removeDupes = function (arr) {
-  return arr.filter((value, index) => arr.indexOf(value) === index);
-};
-
-let sortArray = function (scoreArray) {
-  scoreArray.sort((a, b) => b.score - a.score);
-};
-
-let sortArrayByDate = function (arr) {
-  arr.sort((a, b) => {
-    return new Date(b.date) - new Date(a.date);
-  });
-};
-
-let addToLeaderboard = function (i, username, score) {
-  usernameAndScoreArray = removeDupes(usernameAndScoreArray);
-  let place = (parseInt(i) + 1).toString();
+let addToLeaderboard = function (place, username, score) {
   let row = document.createElement("tr");
   let placedata = document.createElement("td");
   let placeText = document.createTextNode(place);
@@ -440,31 +427,30 @@ let addToPastWinners = function (date, username, score) {
 socket.on("leaderboard scores", function (scores) {
   removeDupes(scores);
   sortArray(scores);
-  leaderboardTable.innerHTML = "";
-  if (mainPlayer.username == scores[0]?.username) {
+  if (mainPlayer.username == scores[0]?.username && loggedIn == true && scores[0]) {
     window.alert("You won!!");
-  } else {
-    window.alert("You Lost! :(");
-  }
-  for (let i in scores) {
-    usernameAndScoreArray.push({ username: scores[i].username, score: scores[i].score });
+  } else if (mainPlayer.username !== scores[0]?.username && loggedIn == true && scores[0]) {
+    window.alert(`You Lost! :( \nthe winner of this match was: ${scores[0]?.username}`);
+  } else if (loggedIn == true) {
+    window.alert("No one won!? Try harder!!!!");
   }
 });
 
 socket.on("someone disconnected", function (disconnector) {
-  EnemyList.forEach((enemy) => {
-    if (enemy.id == disconnector) {
-      EnemyList.splice(EnemyList.indexOf(enemy.id));
-    }
+  PlayerList.forEach((player) => {
+    leaderboardTable.childNodes.forEach((row) => {
+      if (player.id == disconnector) {
+        if (row.childNodes[1].innerText == player.username) {
+          player.loggedIn = false;
+          row.remove();
+        }
+        PlayerList.splice(PlayerList.indexOf(player.id));
+      }
+    });
   });
 });
 
 socket.on("Past winners", function (winners) {
-  pastWinnersArray.push(winners);
-  pastWinnersLogic();
-});
-
-socket.on("Past winners clear", function (winners) {
   pastWinnersArray.push(winners);
   pastWinnersLogic();
 });
@@ -484,47 +470,63 @@ let pastWinnersLogic = function () {
   }
 };
 
-let drawingLoop = function () {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  leaderboardTable.innerHTML = "";
-  filteredUsernameAndScoreArray = removeDupes(usernameAndScoreArray);
+let leaderboardLogic = async function () {
+  filteredUsernameAndScoreArray1 = removeDupes(usernameAndScoreArray);
+  await sortArray(filteredUsernameAndScoreArray1, "fallback");
+  filteredUsernameAndScoreArray2 = removeDupes(filteredUsernameAndScoreArray1);
+  await sortArray(filteredUsernameAndScoreArray2, "fallback");
+  for (let i = 0; i <= PlayerList.length - 1; i++) {
+    let arr = filteredUsernameAndScoreArray2[i];
+    if (arr) {
+      if (arr.loggedIn) {
+        if (!leaderboardTable.childNodes[i] && arr.loggedIn) {
+          if (leaderboardTable.childNodes[i - 1]?.childNodes[1].username !== arr.username) {
+            addToLeaderboard((parseInt(i) + 1).toString(), arr.username, arr.score);
+          }
+        }
+        if (leaderboardTable.childNodes[i] && arr.loggedIn) {
+          leaderboardTable.childNodes[i].childNodes[0].innerText = i + 1;
+          leaderboardTable.childNodes[i].childNodes[1].innerText = arr.username;
+          leaderboardTable.childNodes[i].childNodes[2].innerText = arr.score;
+        }
+      }
+      if (!arr.loggedIn) {
+        leaderboardTable.childNodes[i].remove();
+      }
+    }
+  }
+  usernameAndScoreArray = [];
+  filteredUsernameAndScoreArray1 = [];
+  filteredUsernameAndScoreArray2 = [];
+};
+
+let drawTime = function () {
   roundRect(ctx, 0, 0, 400, 45, { tl: 0, tr: 0, br: 10, bl: 0 }, true, true, "rgba(35, 172, 251, 0.8)", "black");
   ctx.fillStyle = "black";
   ctx.textAlign = "left";
   ctx.font = "30px Courier";
   ctx.fillText(parsedTime, 10, 30);
+};
+
+let drawingLoop = function () {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  getLeaderboardValues();
+  drawTime();
   actionLogic(mainPlayer);
-  sortArray(filteredUsernameAndScoreArray);
-  for (let i in filteredUsernameAndScoreArray) {
-    let arr = filteredUsernameAndScoreArray[i];
-    addToLeaderboard(i, arr.username, arr.score);
-  }
-  usernameAndScoreArray = [];
-  filteredUsernameAndScoreArray = [];
   PlayerList.forEach((player) => {
     player.draw();
-  });
-  EnemyList.forEach((enemy) => {
-    enemy.draw();
   });
 };
 
 let Game_loop = function () {
   drawingLoop();
   sendPlayerInfo();
-  if (mainPlayer.bulletList.length > 0) {
-    sendBulletInfo();
-    pvpChecker();
-  }
-  EnemyList.forEach((enemy) => {
-    if (enemy.bulletList.length > 0) {
-      pvpChecker();
-    }
-  });
+  sendBulletInfo();
+  pvpChecker();
 };
 
 setInterval(() => {
   if (loggedIn) {
     Game_loop();
   }
-}, 10);
+}, 1000 / 60);
