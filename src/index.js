@@ -249,6 +249,7 @@ socket.on("players updated info", function (playerData) {
       player.sx = playerData.sx;
       player.sy = playerData.sy;
       player.score = playerData.score;
+      player.ammoLeft = playerData.ammoLeft;
       player.username = playerData.username;
       player.email = playerData.email;
       player.loggedIn = playerData.loggedIn;
@@ -261,7 +262,21 @@ socket.on("players updated info", function (playerData) {
           })
         );
       }
-      usernameAndScoreArray.push({ username: player.username, score: player.score, loggedIn: player.loggedIn });
+      if (usernameAndScoreArray.length <= 0) {
+        usernameAndScoreArray.push({ username: player.username, score: player.score, loggedIn: true });
+      }
+      for (let i in usernameAndScoreArray) {
+        let arr = usernameAndScoreArray[i];
+        if (arr.username == player.username) {
+          arr.score = player.score;
+        }
+        if (i == usernameAndScoreArray.length - 1 && arr.username !== player.username) {
+          usernameAndScoreArray.push({ username: player.username, score: player.score, loggedIn: true });
+        }
+        if (!arr) {
+          usernameAndScoreArray.push({ username: player.username, score: player.score, loggedIn: true });
+        }
+      }
     }
   });
 });
@@ -284,13 +299,28 @@ let sendPlayerInfo = function () {
     sx: mainPlayer.sx,
     sy: mainPlayer.sy,
     score: mainPlayer.score,
+    ammoLeft: mainPlayer.ammoLeft,
     bulletList: mainPlayer.bulletList.length,
     username: mainPlayer.username,
     email: mainPlayer.email,
     loggedIn: mainPlayer.loggedIn,
     lastDirection: mainPlayer.lastDirection,
   });
-  usernameAndScoreArray.push({ username: mainPlayer.username, score: mainPlayer.score, loggedIn: mainPlayer.loggedIn });
+  if (usernameAndScoreArray.length <= 0) {
+    usernameAndScoreArray.push({ username: mainPlayer.username, score: mainPlayer.score, loggedIn: true });
+  }
+  for (let i in usernameAndScoreArray) {
+    let arr = usernameAndScoreArray[i];
+    if (arr.username == mainPlayer.username) {
+      arr.score = mainPlayer.score;
+    }
+    if (i == usernameAndScoreArray.length - 1 && arr.username !== mainPlayer.username) {
+      usernameAndScoreArray.push({ username: mainPlayer.username, score: mainPlayer.score, loggedIn: true });
+    }
+    if (!arr) {
+      usernameAndScoreArray.push({ username: mainPlayer.username, score: mainPlayer.score, loggedIn: true });
+    }
+  }
 };
 
 let sendBulletInfo = function () {
@@ -316,9 +346,9 @@ socket.on("updated player health", function (health, id) {
   });
 });
 
-socket.on("updated player score", function (score, id) {
+socket.on("updated player score", function (username, score) {
   PlayerList.forEach((player) => {
-    if (player.id == id) {
+    if (player.username == username) {
       player.score = score;
     }
   });
@@ -327,23 +357,32 @@ socket.on("updated player score", function (score, id) {
 let pvpChecker = function () {
   socket.emit("player health", mainPlayer.health, mainPlayer.username, mainPlayer.id);
   for (let i in PlayerList) {
-    for (let u in PlayerList[i].bulletList) {
-      if (checkCollision(PlayerList[i].bulletList[u], PlayerList[i])) {
-        if (PlayerList[i].id != mainPlayer.id && PlayerList[i].bulletList[u].substitute !== true) {
-          console.log(`colliding with ${PlayerList[i].username}`);
-          PlayerList[i].health -= 1;
-          if (PlayerList[i].health <= 0) {
-            PlayerList[i].respawn();
-            mainPlayer.score += 1;
-            socket.emit("score went up", mainPlayer.score, mainPlayer.username);
+    if (PlayerList[i].bulletList.length > 0) {
+      for (let u in PlayerList[i].bulletList) {
+        if (checkCollision(PlayerList[i].bulletList[u], mainPlayer)) {
+          if (PlayerList[i].id !== mainPlayer.id) {
+            mainPlayer.health -= 1;
+            if (mainPlayer.health <= 0) {
+              socket.emit("score went up", PlayerList[i].score, PlayerList[i].username);
+              mainPlayer.respawn();
+            }
+            PlayerList[i].bulletList[u].erase();
+            PlayerList[i].bulletList.splice(u, 1);
+            socket.emit("Player health", {
+              id: mainPlayer.id,
+              username: mainPlayer.username,
+              health: mainPlayer.health,
+            });
           }
-          for (let n in mainPlayer.bulletList) {
-            mainPlayer.bulletList.splice(n, 1);
-          }
-          socket.emit("Player health", {
-            id: PlayerList[i].id,
-            health: PlayerList[i].health,
-          });
+        }
+      }
+    }
+    for (let n in mainPlayer.bulletList) {
+      let arr = mainPlayer.bulletList[n];
+      if (checkCollision(arr, PlayerList[i])) {
+        if (PlayerList[i].id !== mainPlayer.id) {
+          arr.erase();
+          mainPlayer.bulletList.splice(n, 1);
         }
       }
     }
@@ -495,9 +534,9 @@ let leaderboardLogic = async function () {
       }
     }
   }
-  usernameAndScoreArray = [];
-  filteredUsernameAndScoreArray1 = [];
-  filteredUsernameAndScoreArray2 = [];
+  // usernameAndScoreArray = [];
+  // filteredUsernameAndScoreArray1 = [];
+  // filteredUsernameAndScoreArray2 = [];
 };
 
 let drawTime = function () {

@@ -14,7 +14,7 @@ export let createPlayer = function (type) {
         y: h / 2,
         type: type,
         health: 100,
-        keys: ["w", "a", "s", "d", " "],
+        keys: ["w", "a", "s", "d", " ", "r"],
       }))
     : type == "other"
     ? (newPlayer = new Player({
@@ -24,7 +24,7 @@ export let createPlayer = function (type) {
         y: h / 2,
         health: 100,
         type: type,
-        keys: ["w", "a", "s", "d", " "],
+        keys: ["w", "a", "s", "d", " ", "r"],
       }))
     : null;
   newPlayer.draw();
@@ -68,6 +68,8 @@ export function roundRect(ctx, x, y, width, height, radius, fill, stroke, fillco
 }
 
 export let removeDupes = function (arr) {
+  // let uniq = [...new Set(arr)];
+  // console.log(uniq);
   return [...new Set(arr)];
 };
 
@@ -115,8 +117,11 @@ export let actionLogic = function (Player) {
       Player.direction.right = true;
       Player.lastDirection = "right";
     }
-    if (e.key === Player.keys[4]) {
+    if (e.key === Player.keys[4] && Player.ammoLeft > 0 && !Player.reloading) {
       Player.attacking = true;
+    }
+    if (e.key === Player.keys[5] && Player.ammoLeft <= 0 && !Player.reloading) {
+      Player.reloading = true;
     }
   };
 
@@ -137,7 +142,7 @@ export let actionLogic = function (Player) {
       Player.direction.right = false;
       Player.sx = 0;
     }
-    if (e.key === Player.keys[4]) {
+    if (e.key === Player.keys[4] || Player.ammoLeft == 0) {
       Player.attacking = false;
     }
   };
@@ -154,6 +159,10 @@ export let checkCollision = function (object1, object2) {
   let y2 = object2.collisionBox.y;
   let xMax2 = object2.collisionBox.xMax;
   let yMax2 = object2.collisionBox.yMax;
+
+  // ctx.strokeStyle = "red";
+  // ctx.strokeRect(x1, y1, xMax1 - x1, yMax1 - y1);
+  // ctx.strokeRect(x2, y2, xMax2 - x2, yMax2 - y2);
 
   if (x1 <= xMax2 && xMax1 >= x2 && y1 <= yMax2 && yMax1 >= y2) {
     return true;

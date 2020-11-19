@@ -153,7 +153,15 @@ tr:nth-child(odd:not(1)) {
   position: absolute;
   top: 10%;
   padding: 2% 5%;
+  background-repeat: repeat repeat;
+  background-size: 80% 70%;
+  /* background-position: center center; */
   background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='white' stroke-width='4' stroke-dasharray='6%2c 40%2c 1' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+  -moz-animation: glitch-title-background 0.1ms linear infinite;
+  -ms-animation: glitch-title-background 0.1ms linear infinite;
+  -o-animation: glitch-title-background 0.1ms linear infinite;
+  -webkit-animation: glitch-title-background 0.1ms linear infinite;
+  animation: glitch-title-background 0.1ms linear infinite;
 }
 
 @media only screen and (max-width: 400px) {
@@ -331,6 +339,53 @@ button:focus {
   background-color: #000;
 }
 
+@keyframes glitch-title-background {
+  0% {
+    background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='green' stroke-width='4' stroke-dasharray='6%2c 40%2c 1' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+    background-position: center center;
+  }
+  10% {
+    background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='red' stroke-width='4' stroke-dasharray='6%2c 40%2c 1' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+    background-position: center calc(center + 20px);
+  }
+  20% {
+    background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='green' stroke-width='4' stroke-dasharray='6%2c 40%2c 1' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+    background-position: calc(center - 10px) center;
+  }
+  30% {
+    background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='yellow' stroke-width='4' stroke-dasharray='6%2c 40%2c 1' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+    background-position: calc(center - 20px) calc(center - 10px);
+  }
+  40% {
+    background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='blue' stroke-width='4' stroke-dasharray='6%2c 40%2c 1' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+    background-position: center calc(center + 10px);
+  }
+  50% {
+    background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='green' stroke-width='4' stroke-dasharray='6%2c 40%2c 1' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+    background-position: calc(center + 20px) center;
+  }
+  60% {
+    background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='red' stroke-width='4' stroke-dasharray='6%2c 40%2c 1' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+    background-position: center calc(center + 10px);
+  }
+  70% {
+    background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='green' stroke-width='4' stroke-dasharray='6%2c 40%2c 1' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+    background-position: calc(center - 10px) center;
+  }
+  80% {
+    background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='yellow' stroke-width='4' stroke-dasharray='6%2c 40%2c 1' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+    background-position: center center;
+  }
+  90% {
+    background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='blue' stroke-width='4' stroke-dasharray='6%2c 40%2c 1' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+    background-position: center calc(center + 10px);
+  }
+  100% {
+    background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='red' stroke-width='4' stroke-dasharray='6%2c 40%2c 1' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+    background-position: calc(center + 20px) calc(center - 10px);
+  }
+}
+
 @keyframes move-twink-back {
   from {
     background-position: 0 0;
@@ -384,7 +439,6 @@ button:focus {
 .twinkling {
   background: transparent url(http://www.script-tutorials.com/demos/360/images/twinkling.png) repeat top center;
   z-index: 1;
-
   -moz-animation: move-twink-back 200s linear infinite;
   -ms-animation: move-twink-back 200s linear infinite;
   -o-animation: move-twink-back 200s linear infinite;

@@ -67,6 +67,8 @@ let Player = function (props) {
   this.type = p.type;
   this.loggedIn = false;
   this.bulletList = [];
+  this.ammoLimit = 500;
+  this.ammoLeft = this.ammoLimit;
   this.collisionBox = {
     x: this.x,
     y: this.y,
@@ -81,6 +83,7 @@ let Player = function (props) {
   };
   this.lastDirection = "down";
   this.attacking = false;
+  this.reloading = false;
 
   this.draw = () => {
     ctx.drawImage(Img.player, this.sx, this.sy, this.width, this.height, this.x, this.y, this.width, this.height);
@@ -115,6 +118,14 @@ let Player = function (props) {
       thickness: 2,
     });
 
+    let ammoBar = new AmmoBar({
+      x: this.x + 45,
+      y: this.y + 35,
+      width: 15,
+      value: this.ammoLeft,
+      thickness: 2,
+    });
+
     let score = new Score({
       x: this.x,
       y: this.y + 35,
@@ -128,6 +139,12 @@ let Player = function (props) {
       main: this.type == "main" ? true : false,
     });
 
+    let reloadState = new ReloadState({
+      x: this.x - 20,
+      y: this.y - 20,
+      value: "",
+    });
+
     ctx.strokeStyle = "red";
     ctx.strokeRect(
       this.collisionBox.x1,
@@ -137,13 +154,33 @@ let Player = function (props) {
     );
 
     healthBar.draw();
+    ammoBar.draw();
     score.draw();
     usernameLabel.draw();
+    if (this.reloading) {
+      reloadState.value = "Reloading...";
+      reloadState.draw();
+    }
+    if (this.ammoLeft <= 0) {
+      reloadState.value = "Press 'r' to reload";
+      reloadState.draw();
+    }
   };
 
   this.resetBulletlist = function () {
-    if (this.bulletList.length >= 500) {
+    if (this.bulletList.length >= 501) {
       this.bulletList.splice(0, 1);
+    }
+  };
+
+  this.reload = function () {
+    if (this.reloading) {
+      if (this.ammoLeft >= this.ammoLimit) {
+        this.reloading = false;
+      } else if (this.ammoLeft < this.ammoLimit) {
+        this.bulletList.unshift();
+        this.ammoLeft += 1;
+      }
     }
   };
 
@@ -168,7 +205,7 @@ let Player = function (props) {
       this.sx += this.width;
       this.x += this.speed;
     }
-    if (this.attacking) {
+    if (this.attacking && this.ammoLeft > 0 && !this.reloading) {
       let newBullet = new Bullet({
         x: this.x + this.width / 2,
         y: this.y + this.height / 2,
@@ -179,6 +216,7 @@ let Player = function (props) {
 
       this.bulletList.push(newBullet);
       newBullet.draw();
+      this.ammoLeft -= 1;
     }
     this.resetSx();
     this.resetBulletlist();
@@ -187,6 +225,7 @@ let Player = function (props) {
 
   this.respawn = function () {
     this.health = this.healthMax;
+    this.reloading = false;
     this.x = Math.floor(Math.random() * canvas.width);
     this.y = Math.floor(Math.random() * canvas.height);
   };
@@ -200,6 +239,12 @@ let Player = function (props) {
     };
     if (this.health <= 0) {
       this.respawn();
+    }
+    if (this.reloading) {
+      this.reload();
+    }
+    if (this.ammoLeft >= this.ammoLimit) {
+      this.reloading = false;
     }
   };
 };
@@ -223,11 +268,44 @@ let HealthBar = function (props) {
     ctx.textAlign = "left";
     ctx.fillText(this.value, this.x - 9, this.y + 3);
 
-    if (this.value >= 75) {
+    if (this.value >= (this.value / 4) * 3) {
       ctx.fillStyle = "green";
-    } else if (this.value >= 50) {
+    } else if (this.value >= (this.value / 4) * 2) {
       ctx.fillStyle = "gold";
-    } else if (this.value >= 25) {
+    } else if (this.value >= (this.value / 4) * 1) {
+      ctx.fillStyle = "orange";
+    } else {
+      ctx.fillStyle = "red";
+    }
+    ctx.closePath();
+    ctx.fill();
+  };
+};
+
+let AmmoBar = function (props) {
+  let p = props;
+  this.x = p.x;
+  this.y = p.y;
+  this.width = p.width;
+  this.radius = this.width;
+  this.value = p.value;
+  this.thickness = p.thickness;
+
+  this.draw = function () {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius, -Math.PI / 2, Math.radians(this.value * 0.72) - Math.PI / 2, false);
+    ctx.arc(this.x, this.y, this.radius - this.thickness, Math.radians(this.value * 0.72) - Math.PI / 2, -Math.PI / 2, true);
+    ctx.lineWidth = 1;
+    ctx.fillStyle = "black";
+    ctx.font = "10px courier";
+    ctx.textAlign = "left";
+    ctx.fillText(this.value, this.x - 9, this.y + 3);
+
+    if (this.value >= (this.value / 4) * 3) {
+      ctx.fillStyle = "green";
+    } else if (this.value >= (this.value / 4) * 2) {
+      ctx.fillStyle = "gold";
+    } else if (this.value >= (this.value / 4) * 1) {
       ctx.fillStyle = "orange";
     } else {
       ctx.fillStyle = "red";
@@ -266,6 +344,20 @@ let UsernameLabel = function (props) {
       ctx.fillRect(this.x - 3, this.y - 12, this.value.toString().length * 11, 15);
     }
     ctx.fillStyle = this.main ? "rgb(225 103 253)" : "red";
+    ctx.fillText(this.value, this.x, this.y);
+  };
+};
+
+let ReloadState = function (props) {
+  let p = props;
+  this.x = p.x;
+  this.y = p.y;
+  this.value = p.value;
+
+  this.draw = function () {
+    ctx.textAlign = "left";
+    ctx.font = "10px courier";
+    ctx.fillStyle = "rgba(255, 0, 0, 1)";
     ctx.fillText(this.value, this.x, this.y);
   };
 };

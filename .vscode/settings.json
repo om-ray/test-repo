@@ -3,7 +3,7 @@
     "commands": [
       {
         "match": ".*",
-        "cmd": "npm start",
+        "cmd": "yarn start",
         "useShortcut": false,
         "silent": true
       }

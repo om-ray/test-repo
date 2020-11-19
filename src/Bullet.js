@@ -1,8 +1,8 @@
 let canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
 let bulletSpeed = 10;
-let width = 1;
-let height = 1;
+let width = 2;
+let height = 2;
 
 let Bullet = function (props) {
   let p = props;
@@ -41,6 +41,10 @@ let Bullet = function (props) {
       this.x += this.speed;
     }
     this.update();
+  };
+
+  this.erase = function () {
+    ctx.clearRect(this.x, this.y, this.width, this.height);
   };
 
   this.setValues = function (x, y, substitute) {

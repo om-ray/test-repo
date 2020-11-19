@@ -3,8 +3,8 @@ let app = express();
 let server = require("http").createServer(app);
 let io = require("socket.io")(server);
 let mongoose = require("mongoose");
-let PlayerModel = require("./src/DB/Schemas/PlayerModel");
-let ProgressModel = require("./src/DB/Schemas/ProgressSchema");
+let PlayerModel = require("./Server/Schemas/PlayerModel");
+let ProgressModel = require("./Server/Schemas/ProgressSchema");
 let nodemailer = require("nodemailer");
 let fetch = require("node-fetch");
 let MONGODB_URI = "mongodb+srv://123om123:crbBhQirzfyonefb@cluster0.c3yq9.mongodb.net/test?retryWrites=true&w=majority";
@@ -346,12 +346,17 @@ io.on("connection", function (socket) {
     PlayerModel.updateOne({ Username: username }, { $set: { Health: health } }, { upsert: false }).then((res) => {});
   });
 
-  socket.on("player score", function (score, username, id) {
-    socket.broadcast.emit("updated player score", score, id);
-    scoreArray.push({ username: username, score: score });
+  socket.on("Player health", function (data) {
+    socket.broadcast.emit("updated player health", data.health, data.id);
+    PlayerModel.updateOne({ Username: data.username }, { $set: { Health: data.health } }, { upsert: false }).then((res) => {});
+  });
+
+  socket.on("score went up", function (score, username) {
+    socket.broadcast.emit("updated player score", username, score + 1);
+    scoreArray.push({ username: username, score: score + 1 });
     removeDupes(scoreArray);
     sortArray(scoreArray);
-    PlayerModel.updateOne({ Username: id }, { $set: { Score: score } }, { upsert: false }).then((res) => {});
+    PlayerModel.updateOne({ Username: username }, { $set: { Score: score + 1 } }, { upsert: false }).then((res) => {});
   });
 
   socket.on("IP", function (data) {
