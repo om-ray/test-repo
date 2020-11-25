@@ -262,21 +262,6 @@ socket.on("players updated info", function (playerData) {
           })
         );
       }
-      if (usernameAndScoreArray.length <= 0) {
-        usernameAndScoreArray.push({ username: player.username, score: player.score, loggedIn: true });
-      }
-      for (let i in usernameAndScoreArray) {
-        let arr = usernameAndScoreArray[i];
-        if (arr.username == player.username) {
-          arr.score = player.score;
-        }
-        if (i == usernameAndScoreArray.length - 1 && arr.username !== player.username) {
-          usernameAndScoreArray.push({ username: player.username, score: player.score, loggedIn: true });
-        }
-        if (!arr) {
-          usernameAndScoreArray.push({ username: player.username, score: player.score, loggedIn: true });
-        }
-      }
     }
   });
 });
@@ -306,21 +291,6 @@ let sendPlayerInfo = function () {
     loggedIn: mainPlayer.loggedIn,
     lastDirection: mainPlayer.lastDirection,
   });
-  if (usernameAndScoreArray.length <= 0) {
-    usernameAndScoreArray.push({ username: mainPlayer.username, score: mainPlayer.score, loggedIn: true });
-  }
-  for (let i in usernameAndScoreArray) {
-    let arr = usernameAndScoreArray[i];
-    if (arr.username == mainPlayer.username) {
-      arr.score = mainPlayer.score;
-    }
-    if (i == usernameAndScoreArray.length - 1 && arr.username !== mainPlayer.username) {
-      usernameAndScoreArray.push({ username: mainPlayer.username, score: mainPlayer.score, loggedIn: true });
-    }
-    if (!arr) {
-      usernameAndScoreArray.push({ username: mainPlayer.username, score: mainPlayer.score, loggedIn: true });
-    }
-  }
 };
 
 let sendBulletInfo = function () {
@@ -510,12 +480,10 @@ let pastWinnersLogic = function () {
 };
 
 let leaderboardLogic = async function () {
-  filteredUsernameAndScoreArray1 = removeDupes(usernameAndScoreArray);
-  await sortArray(filteredUsernameAndScoreArray1, "fallback");
-  filteredUsernameAndScoreArray2 = removeDupes(filteredUsernameAndScoreArray1);
-  await sortArray(filteredUsernameAndScoreArray2, "fallback");
+  usernameAndScoreArray = PlayerList;
+  await sortArray(usernameAndScoreArray);
   for (let i = 0; i <= PlayerList.length - 1; i++) {
-    let arr = filteredUsernameAndScoreArray2[i];
+    let arr = usernameAndScoreArray[i];
     if (arr) {
       if (arr.loggedIn) {
         if (!leaderboardTable.childNodes[i] && arr.loggedIn) {
@@ -525,18 +493,17 @@ let leaderboardLogic = async function () {
         }
         if (leaderboardTable.childNodes[i] && arr.loggedIn) {
           leaderboardTable.childNodes[i].childNodes[0].innerText = i + 1;
-          leaderboardTable.childNodes[i].childNodes[1].innerText = arr.username;
+          if (leaderboardTable.childNodes[i].childNodes[1].innerText !== arr.username) {
+            leaderboardTable.childNodes[i].childNodes[1].innerText = arr.username;
+          }
           leaderboardTable.childNodes[i].childNodes[2].innerText = arr.score;
         }
       }
       if (!arr.loggedIn) {
-        leaderboardTable.childNodes[i].remove();
+        leaderboardTable.childNodes[i]?.remove();
       }
     }
   }
-  // usernameAndScoreArray = [];
-  // filteredUsernameAndScoreArray1 = [];
-  // filteredUsernameAndScoreArray2 = [];
 };
 
 let drawTime = function () {
@@ -549,8 +516,8 @@ let drawTime = function () {
 
 let drawingLoop = function () {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  getLeaderboardValues();
   drawTime();
+  getLeaderboardValues();
   actionLogic(mainPlayer);
   PlayerList.forEach((player) => {
     player.draw();

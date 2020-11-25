@@ -162,6 +162,7 @@ let Player = function (props) {
       reloadState.draw();
     }
     if (this.ammoLeft <= 0) {
+      this.attacking = false;
       reloadState.value = "Press 'r' to reload";
       reloadState.draw();
     }
@@ -178,6 +179,11 @@ let Player = function (props) {
       if (this.ammoLeft >= this.ammoLimit) {
         this.reloading = false;
       } else if (this.ammoLeft < this.ammoLimit) {
+        this.attacking = false;
+        for (let i in this.bulletList) {
+          let arr = this.bulletList[i];
+          arr.erase();
+        }
         this.bulletList.unshift();
         this.ammoLeft += 1;
       }
@@ -205,7 +211,7 @@ let Player = function (props) {
       this.sx += this.width;
       this.x += this.speed;
     }
-    if (this.attacking && this.ammoLeft > 0 && !this.reloading) {
+    if (this.attacking && this.ammoLeft !== 0 && !this.reloading) {
       let newBullet = new Bullet({
         x: this.x + this.width / 2,
         y: this.y + this.height / 2,
@@ -215,7 +221,7 @@ let Player = function (props) {
       });
 
       this.bulletList.push(newBullet);
-      newBullet.draw();
+      // newBullet.draw();
       this.ammoLeft -= 1;
     }
     this.resetSx();
@@ -245,6 +251,9 @@ let Player = function (props) {
     }
     if (this.ammoLeft >= this.ammoLimit) {
       this.reloading = false;
+    }
+    if (this.ammoLeft <= 0) {
+      this.attacking = false;
     }
   };
 };

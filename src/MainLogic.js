@@ -117,7 +117,7 @@ export let actionLogic = function (Player) {
       Player.direction.right = true;
       Player.lastDirection = "right";
     }
-    if (e.key === Player.keys[4] && Player.ammoLeft > 0 && !Player.reloading) {
+    if (e.key === Player.keys[4] && !Player.reloading) {
       Player.attacking = true;
     }
     if (e.key === Player.keys[5] && Player.ammoLeft <= 0 && !Player.reloading) {
@@ -142,7 +142,7 @@ export let actionLogic = function (Player) {
       Player.direction.right = false;
       Player.sx = 0;
     }
-    if (e.key === Player.keys[4] || Player.ammoLeft == 0) {
+    if (e.key === Player.keys[4]) {
       Player.attacking = false;
     }
   };
