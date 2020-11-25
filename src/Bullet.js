@@ -8,6 +8,7 @@ let Bullet = function (props) {
   let p = props;
   this.x = p.x;
   this.y = p.y;
+  this.id = Math.floor(Math.random() * 1000);
   this.width = width;
   this.height = height;
   this.speed = bulletSpeed;
@@ -22,9 +23,16 @@ let Bullet = function (props) {
     yMax: this.y + this.height,
   };
 
+  let label = new UsernameLabel({
+    x: this.x + 10,
+    y: this.y,
+    value: this.id,
+  });
+
   this.draw = function () {
     ctx.fillStyle = this.color;
     ctx.fillRect(this.x, this.y, this.width, this.height);
+    // label.draw();
   };
 
   this.move = function () {
@@ -47,10 +55,12 @@ let Bullet = function (props) {
     ctx.clearRect(this.x, this.y, this.width, this.height);
   };
 
-  this.setValues = function (x, y, substitute) {
+  this.setValues = function (x, y, substitute, id, direction) {
     this.x = x;
     this.y = y;
     this.substitute = substitute;
+    this.id = id;
+    this.direction = direction;
     // console.log(`x: ${x}, y: ${y}`);
   };
 
@@ -61,6 +71,22 @@ let Bullet = function (props) {
       xMax: this.x + this.width,
       yMax: this.y + this.height,
     };
+    label.x = this.x;
+    label.y = this.y;
+  };
+};
+
+let UsernameLabel = function (props) {
+  let p = props;
+  this.x = p.x;
+  this.y = p.y;
+  this.value = p.value;
+
+  this.draw = function () {
+    ctx.textAlign = "left";
+    ctx.font = "15px courier";
+    ctx.fillStyle = "red";
+    ctx.fillText(this.value, this.x, this.y);
   };
 };
 

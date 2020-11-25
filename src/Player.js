@@ -60,6 +60,8 @@ let Player = function (props) {
   this.health = p.health;
   this.damage = playerDamage;
   this.keys = p.keys;
+  this.timesReloaded = 0;
+  this.needsToReload = false;
   this.healthMax = 100;
   this.score = 0;
   this.sx = 0;
@@ -169,16 +171,14 @@ let Player = function (props) {
   };
 
   this.resetBulletlist = function () {
-    if (this.bulletList.length >= 501) {
+    if (this.bulletList.length >= 500) {
       this.bulletList.splice(0, 1);
     }
   };
 
   this.reload = function () {
     if (this.reloading) {
-      if (this.ammoLeft >= this.ammoLimit) {
-        this.reloading = false;
-      } else if (this.ammoLeft < this.ammoLimit) {
+      if (this.ammoLeft <= this.ammoLimit) {
         this.attacking = false;
         for (let i in this.bulletList) {
           let arr = this.bulletList[i];
@@ -186,6 +186,11 @@ let Player = function (props) {
         }
         this.bulletList.unshift();
         this.ammoLeft += 1;
+      }
+      if (this.ammoLeft == this.ammoLimit) {
+        this.reloading = false;
+        this.timesReloaded += 1;
+        this.needsToReload = false;
       }
     }
   };
@@ -253,6 +258,7 @@ let Player = function (props) {
       this.reloading = false;
     }
     if (this.ammoLeft <= 0) {
+      this.needsToReload = true;
       this.attacking = false;
     }
   };

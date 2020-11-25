@@ -250,15 +250,23 @@ socket.on("players updated info", function (playerData) {
       player.sy = playerData.sy;
       player.score = playerData.score;
       player.ammoLeft = playerData.ammoLeft;
+      player.reloading = playerData.reloading;
+      player.timesReloaded = playerData.timesReloaded;
+      player.needsToReload = playerData.needsToReload;
       player.username = playerData.username;
       player.email = playerData.email;
       player.loggedIn = playerData.loggedIn;
       player.lastDirection = playerData.lastDirection;
-      while (player.bulletList.length <= playerData.bulletList) {
+      while (
+        player.bulletList.length <= playerData.bulletList &&
+        playerData.ammoLeft > 0 &&
+        playerData.reloading == false &&
+        player.timesReloaded == playerData.timesReloaded &&
+        playerData.needsToReload == false
+      ) {
         player.bulletList.push(
           new Bullet({
             shooter: player.id,
-            direction: player.lastDirection,
           })
         );
       }
@@ -269,8 +277,14 @@ socket.on("players updated info", function (playerData) {
 socket.on("bullets updated info", function (bulletInfo) {
   for (let i in PlayerList) {
     let player = PlayerList[i];
-    if (player.id == bulletInfo.bulletShooter && player.bulletList.length > 0) {
-      player.bulletList[player.bulletList.length - 1].setValues(bulletInfo.bulletX, bulletInfo.bulletY, bulletInfo.bulletSubstitute);
+    if (player.id == bulletInfo.bulletShooter && player.bulletList.length > 0 && player.ammoLeft > 0) {
+      player.bulletList[player.bulletList.length - 1].setValues(
+        bulletInfo.bulletX,
+        bulletInfo.bulletY,
+        bulletInfo.bulletSubstitute,
+        bulletInfo.id,
+        bulletInfo.direction
+      );
     }
   }
 });
@@ -285,6 +299,9 @@ let sendPlayerInfo = function () {
     sy: mainPlayer.sy,
     score: mainPlayer.score,
     ammoLeft: mainPlayer.ammoLeft,
+    reloading: mainPlayer.reloading,
+    timesReloaded: mainPlayer.timesReloaded,
+    needsToReload: mainPlayer.needsToReload,
     bulletList: mainPlayer.bulletList.length,
     username: mainPlayer.username,
     email: mainPlayer.email,
@@ -300,6 +317,9 @@ let sendBulletInfo = function () {
       bulletY: mainPlayer.bulletList[mainPlayer.bulletList.length - 1].y,
       bulletShooter: mainPlayer.bulletList[mainPlayer.bulletList.length - 1].shooter,
       bulletSubstitute: mainPlayer.bulletList[mainPlayer.bulletList.length - 1].substitute,
+      id: mainPlayer.bulletList[mainPlayer.bulletList.length - 1].id,
+      direction: mainPlayer.bulletList[mainPlayer.bulletList.length - 1].direction,
+      timesReloaded: mainPlayer.timesReloaded,
     });
   }
 };
