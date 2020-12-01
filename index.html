@@ -25,7 +25,10 @@
         <input placeholder="Username" type="text" id="usernameInput" />
         <input placeholder="Email" style="display: none" type="email" id="emailInput" />
         <input placeholder="Password" type="password" id="passwordInput" />
-        <button id="submitButton" class="submitButton">Submit</button>
+        <button id="submitButton" class="submitButton">
+          <div id="loader" class="loader"></div>
+          <div id="submitText" class="submitText">Submit</div>
+        </button>
         <br />
         <div id="signUpOrLogInContainer">
           <h4 id="signUpOrLogInButtonText">Don't have an account?</h4>
@@ -53,7 +56,7 @@
         <table>
           <thead id="leaderboardTable">
             <tr id="leaderboardColumnHeaders">
-              <th id="placeRowHeader">Place</th>
+              <th id="placeRowHeader">#</th>
               <th id="usernameRowHeader">Username</th>
               <th id="scoreRowHeader">Score</th>
             </tr>

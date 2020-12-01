@@ -12,6 +12,7 @@ refreshButton.onclick = function () {
 };
 
 socket.on("Here is the data", function (data) {
+  console.log("data is here");
   adminPanelBody.innerHTML = "";
   for (let i in data) {
     let arr = data[i];

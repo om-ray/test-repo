@@ -68,6 +68,7 @@ let Player = function (props) {
   this.sy = 0;
   this.type = p.type;
   this.loggedIn = false;
+  this.afk = false;
   this.bulletList = [];
   this.ammoLimit = 500;
   this.ammoLeft = this.ammoLimit;
@@ -90,6 +91,12 @@ let Player = function (props) {
   this.draw = () => {
     ctx.drawImage(Img.player, this.sx, this.sy, this.width, this.height, this.x, this.y, this.width, this.height);
     if (this.loggedIn == false) {
+      ctx.drawImage(Img.forcefield, this.x - this.width / 1.4, this.y - this.height / 4, this.height + 30, this.height + 30);
+    }
+    if (this.afk == true) {
+      ctx.fillStyle = "black";
+      ctx.font = "13px courier";
+      ctx.fillText("This player is AFK", this.x - 50, this.y - 20);
       ctx.drawImage(Img.forcefield, this.x - this.width / 1.4, this.y - this.height / 4, this.height + 30, this.height + 30);
     }
     for (let i in this.bulletList) {
@@ -236,7 +243,6 @@ let Player = function (props) {
 
   this.respawn = function () {
     this.health = this.healthMax;
-    this.reloading = false;
     this.x = Math.floor(Math.random() * canvas.width);
     this.y = Math.floor(Math.random() * canvas.height);
   };
@@ -283,11 +289,11 @@ let HealthBar = function (props) {
     ctx.textAlign = "left";
     ctx.fillText(this.value, this.x - 9, this.y + 3);
 
-    if (this.value >= (this.value / 4) * 3) {
+    if (this.value >= (100 / 4) * 3) {
       ctx.fillStyle = "green";
-    } else if (this.value >= (this.value / 4) * 2) {
+    } else if (this.value >= (100 / 4) * 2) {
       ctx.fillStyle = "gold";
-    } else if (this.value >= (this.value / 4) * 1) {
+    } else if (this.value >= (100 / 4) * 1) {
       ctx.fillStyle = "orange";
     } else {
       ctx.fillStyle = "red";
@@ -316,14 +322,14 @@ let AmmoBar = function (props) {
     ctx.textAlign = "left";
     ctx.fillText(this.value, this.x - 9, this.y + 3);
 
-    if (this.value >= (this.value / 4) * 3) {
-      ctx.fillStyle = "green";
-    } else if (this.value >= (this.value / 4) * 2) {
-      ctx.fillStyle = "gold";
-    } else if (this.value >= (this.value / 4) * 1) {
-      ctx.fillStyle = "orange";
-    } else {
+    if (this.value >= (500 / 4) * 3) {
       ctx.fillStyle = "red";
+    } else if (this.value >= (500 / 4) * 2) {
+      ctx.fillStyle = "orange";
+    } else if (this.value >= (500 / 4) * 1) {
+      ctx.fillStyle = "gold";
+    } else {
+      ctx.fillStyle = "green";
     }
     ctx.closePath();
     ctx.fill();

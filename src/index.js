@@ -25,6 +25,8 @@ let pastWinnersContainer = document.getElementById("pastWinnersContainer");
 let pastWinnersTableBody = document.getElementById("pastWinnersTableBody");
 let dateRowHeader = document.getElementById("dateRowHeaderBtn");
 let scoreRowHeader = document.getElementById("scoreRowHeaderBtn");
+let loader = document.getElementById("loader");
+let submitText = document.getElementById("submitText");
 let socket = io({ reconnection: false });
 let PlayerList = [];
 let LogIn = true;
@@ -37,8 +39,8 @@ let email = emailInput.value;
 let password = passwordInput.value;
 let parsedTime;
 let usernameAndScoreArray = [];
-let filteredUsernameAndScoreArray1 = [];
-let filteredUsernameAndScoreArray2 = [];
+let allowPvp = true;
+let submitting = false;
 let pastWinnersArray = [];
 let pastWinnersArrayFlattened = [];
 
@@ -66,9 +68,19 @@ passwordInput.addEventListener("change", updateLogInInfo());
 submitButton.onclick = function () {
   if (LogIn && usernameInput.value != "" && passwordInput.value != "") {
     updateLogInInfo();
+    submitting = true;
+    if (submitting == true) {
+      loader.style.display = "block";
+      submitText.style.display = "none";
+    }
     socket.emit("Log in attempt", { username: username, password: password });
   } else if (SignUp && usernameInput.value != "" && passwordInput.value != "" && emailInput.value != "") {
     updateLogInInfo();
+    submitting = true;
+    if (submitting == true) {
+      loader.style.display = "block";
+      submitText.style.display = "none";
+    }
     socket.emit("Sign up attempt", { username: username, email: email, password: password });
   }
   if (LogIn) {
@@ -144,14 +156,29 @@ scoreRowHeader.onclick = function () {
 };
 
 socket.on("Player with this username already exists", function () {
+  submitting = false;
+  if (submitting == false) {
+    loader.style.display = "none";
+    submitText.style.display = "block";
+  }
   window.alert("A player with this username already exists!");
 });
 
 socket.on("Player with this email already exists", function () {
+  submitting = false;
+  if (submitting == false) {
+    loader.style.display = "none";
+    submitText.style.display = "block";
+  }
   window.alert("A player with this email already exists!");
 });
 
 socket.on("Sign up successful", function () {
+  submitting = false;
+  if (submitting == false) {
+    loader.style.display = "none";
+    submitText.style.display = "block";
+  }
   window.alert("Sign up successful! Please verify your account!");
   LogIn = true;
   SignUp = false;
@@ -164,6 +191,11 @@ socket.on("Sign up successful", function () {
 });
 
 socket.on("You have been verified", function () {
+  submitting = false;
+  if (submitting == false) {
+    loader.style.display = "none";
+    submitText.style.display = "block";
+  }
   window.alert("Your verification was successful! Please Log in");
   modalBackdrop.style.display = "none";
   verificationModalContainer.style.display = "none";
@@ -174,29 +206,54 @@ socket.on("You have been verified", function () {
 });
 
 socket.on("Wrong verification code", function () {
+  submitting = false;
+  if (submitting == false) {
+    loader.style.display = "none";
+    submitText.style.display = "block";
+  }
   window.alert("Your verification code is incorrect! Please try again");
   verificationCodeInput.innerText = "";
   verificationCodeInput.focus();
 });
 
 socket.on("Wrong password", function () {
+  submitting = false;
+  if (submitting == false) {
+    loader.style.display = "none";
+    submitText.style.display = "block";
+  }
   window.alert("Wrong password! Please try again");
   passwordInput.value = "";
   passwordInput.focus();
 });
 
 socket.on("No player exists with that username", function () {
+  submitting = false;
+  if (submitting == false) {
+    loader.style.display = "none";
+    submitText.style.display = "block";
+  }
   window.alert("There is no user with that username! Try signing up");
   signUpOrLogInButton.focus();
 });
 
 socket.on("Account needs verification", function () {
+  submitting = false;
+  if (submitting == false) {
+    loader.style.display = "none";
+    submitText.style.display = "block";
+  }
   window.alert("Please verify your account!");
   modalBackdrop.style.display = "block";
   verificationModalContainer.style.display = "flex";
 });
 
 socket.on("Log in successful", function () {
+  submitting = false;
+  if (submitting == false) {
+    loader.style.display = "none";
+    submitText.style.display = "block";
+  }
   window.alert("Log in successful!");
   loggedIn = true;
   mainPlayer.loggedIn = true;
@@ -208,6 +265,11 @@ socket.on("Log in successful", function () {
 });
 
 socket.on("This player is already logged in", function () {
+  submitting = false;
+  if (submitting == false) {
+    loader.style.display = "none";
+    submitText.style.display = "block";
+  }
   window.alert("You are already logged in! Please close ALL other instances of the game");
 });
 
@@ -223,11 +285,19 @@ window.addEventListener("resize", () => {
 });
 
 resizeCanvas();
+socket.emit("send past winners");
 let newPlayer = createPlayer("main");
 PlayerList.push(newPlayer);
 socket.emit("I wish to exist", PlayerList[0]);
-socket.emit("send past winners");
 let mainPlayer = PlayerList[0];
+
+document.addEventListener("visibilitychange", function () {
+  if (document.visibilityState === "visible") {
+    mainPlayer.afk = false;
+  } else {
+    mainPlayer.afk = true;
+  }
+});
 
 let getLeaderboardValues = function () {
   socket.emit("can i have the leaderboard values");
@@ -256,12 +326,12 @@ socket.on("players updated info", function (playerData) {
       player.username = playerData.username;
       player.email = playerData.email;
       player.loggedIn = playerData.loggedIn;
+      player.afk = playerData.afk;
       player.lastDirection = playerData.lastDirection;
       while (
         player.bulletList.length <= playerData.bulletList &&
-        playerData.ammoLeft > 0 &&
-        playerData.reloading == false &&
-        player.timesReloaded == playerData.timesReloaded &&
+        // playerData.ammoLeft > 0 &&
+        // playerData.reloading == false &&
         playerData.needsToReload == false
       ) {
         player.bulletList.push(
@@ -306,6 +376,7 @@ let sendPlayerInfo = function () {
     username: mainPlayer.username,
     email: mainPlayer.email,
     loggedIn: mainPlayer.loggedIn,
+    afk: mainPlayer.afk,
     lastDirection: mainPlayer.lastDirection,
   });
 };
@@ -349,7 +420,7 @@ let pvpChecker = function () {
   for (let i in PlayerList) {
     if (PlayerList[i].bulletList.length > 0) {
       for (let u in PlayerList[i].bulletList) {
-        if (checkCollision(PlayerList[i].bulletList[u], mainPlayer)) {
+        if (checkCollision(PlayerList[i].bulletList[u], mainPlayer) && allowPvp) {
           if (PlayerList[i].id !== mainPlayer.id) {
             mainPlayer.health -= 1;
             if (mainPlayer.health <= 0) {
@@ -396,6 +467,19 @@ socket.on("other player", function (them) {
 socket.on("Match starting", function () {
   if (loggedIn) {
     window.alert("Match starting");
+    socket.emit("send past winners");
+    mainPlayer.score = 0;
+    mainPlayer.health = 100;
+    mainPlayer.bulletList = [];
+    mainPlayer.ammoleft = 500;
+    PlayerList.forEach((player) => {
+      player.score = 0;
+      player.health = 100;
+      player.bulletList = [];
+      player.ammoleft = 500;
+    });
+    sendPlayerInfo();
+    allowPvp = true;
   }
 });
 
@@ -416,6 +500,19 @@ socket.on("current time2", function (time) {
 socket.on("Match finished", function () {
   if (loggedIn) {
     window.alert("Match finished");
+    socket.emit("send past winners");
+    mainPlayer.score = 0;
+    mainPlayer.health = 100;
+    mainPlayer.bulletList = [];
+    mainPlayer.ammoleft = 500;
+    PlayerList.forEach((player) => {
+      player.score = 0;
+      player.health = 100;
+      player.bulletList = [];
+      player.ammoleft = 500;
+    });
+    sendPlayerInfo();
+    allowPvp = false;
   }
 });
 
@@ -467,33 +564,36 @@ socket.on("leaderboard scores", function (scores) {
 
 socket.on("someone disconnected", function (disconnector) {
   PlayerList.forEach((player) => {
-    leaderboardTable.childNodes.forEach((row) => {
-      if (player.id == disconnector) {
+    if (player.id == disconnector) {
+      leaderboardTable.childNodes.forEach((row) => {
         if (row.childNodes[1].innerText == player.username) {
           player.loggedIn = false;
+          PlayerList.splice(PlayerList.indexOf(player.id));
           row.remove();
         }
-        PlayerList.splice(PlayerList.indexOf(player.id));
-      }
-    });
+      });
+    }
   });
 });
 
 socket.on("Past winners", function (winners) {
+  console.log("past winners");
   pastWinnersArray.push(winners);
   pastWinnersLogic();
 });
 
 let pastWinnersLogic = function () {
+  pastWinnersArrayFlattened = [];
   pastWinnersTableBody.innerHTML = "";
-  pastWinnersArrayFlattened = pastWinnersArray.flat();
+  console.log(removeDupes(pastWinnersArray.flat()));
+  pastWinnersArrayFlattened = removeDupes(pastWinnersArray.flat());
   if (byScore) {
     sortArray(pastWinnersArrayFlattened);
   } else if (byDate) {
     sortArrayByDate(pastWinnersArrayFlattened);
   }
-  for (let i in pastWinnersArrayFlattened) {
-    let arr = pastWinnersArrayFlattened[i];
+  for (let i in removeDupes(pastWinnersArrayFlattened)) {
+    let arr = removeDupes(pastWinnersArrayFlattened)[i];
     let today = moment(arr.date).format("L LT");
     addToPastWinners(today, arr.username, arr.score);
   }

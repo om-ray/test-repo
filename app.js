@@ -172,6 +172,10 @@ let removeDupes = function (scoreArray) {
   }
 };
 
+let removeDupes2 = function (arr) {
+  return [...new Set(arr)];
+};
+
 let sortArray = function (scoreArray) {
   scoreArray.sort((a, b) => b.score - a.score);
 };
@@ -179,7 +183,7 @@ let sortArray = function (scoreArray) {
 io.on("connection", function (socket) {
   console.log(socket.id + " joined the server on " + new Date().toLocaleString());
 
-  socket.on("Sign up attempt", async function (signUpInfo) {
+  socket.on("Sign up attempt", function (signUpInfo) {
     let playerData = {
       ID: Math.floor(Math.random() * 1000000),
       LoggedIn: false,
@@ -204,7 +208,7 @@ io.on("connection", function (socket) {
       DatesWon: [],
     };
 
-    await PlayerModel.findOne({ Username: signUpInfo.username }, async (err, res) => {
+    PlayerModel.findOne({ Username: signUpInfo.username }, async (err, res) => {
       if (res) {
         console.log("SIGN UP FAILED: Player with this username already exists");
         socket.emit("Player with this username already exists");
@@ -250,19 +254,22 @@ io.on("connection", function (socket) {
     });
   });
 
-  socket.on("Log in attempt", async function (logInInfo) {
-    await PlayerModel.findOne({ Username: logInInfo.username }, async (err, res) => {
+  socket.on("Log in attempt", function (logInInfo) {
+    PlayerModel.findOne({ Username: logInInfo.username }, (err, res) => {
       if (res) {
         if (res.checkPassword(logInInfo.password)) {
+          // console.log("password is correct", new Date().toLocaleString());
           if (res.checkVerification()) {
+            // console.log("account is verified", new Date().toLocaleString());
             if (!res.checkLoggedIn()) {
+              // console.log("account is not logged in", new Date().toLocaleString());
               socket.emit("Log in successful");
               for (let i in playerList) {
                 if (playerList[i].id == socket.id) {
                   playerList[i].username = logInInfo.username;
                 }
               }
-              await PlayerModel.updateOne(
+              PlayerModel.updateOne(
                 { Username: logInInfo.username, Password: logInInfo.password, LoggedIn: false, Verified: true },
                 { $set: { LoggedIn: true } },
                 { upsert: false }
@@ -289,8 +296,8 @@ io.on("connection", function (socket) {
     });
   });
 
-  socket.on("Verification code", async function (data) {
-    await PlayerModel.findOne({ Code: data.code, Username: data.username, Verified: false }, async (err, res) => {
+  socket.on("Verification code", function (data) {
+    PlayerModel.findOne({ Code: data.code, Username: data.username, Verified: false }, async (err, res) => {
       if (res) {
         await PlayerModel.updateOne({ Username: data.username }, { $set: { Verified: true } }, { upsert: false }).then((res) => {
           if (res) {
@@ -382,9 +389,13 @@ io.on("connection", function (socket) {
         for (let i in res) {
           let arr = res[i];
           if (arr.DatesWon.length > 0) {
-            socket.emit("Past winners", arr.DatesWon);
+            console.log("sending");
+            socket.emit("Past winners", removeDupes2(arr.DatesWon));
           }
         }
+      }
+      if (err) {
+        console.error(err);
       }
     });
   });
@@ -430,7 +441,7 @@ io.on("connection", function (socket) {
   });
 });
 
-setInterval(() => {
+setInterval(async () => {
   if (matchIsStarting == true) {
     io.emit("Match starting");
   }
@@ -447,32 +458,78 @@ setInterval(() => {
     });
   }
   if (matchIsEnding == true) {
-    io.emit("Match finished");
-    io.emit("leaderboard scores", scoreArray);
+    console.log("match finished");
     matchIsEnding = false;
     betweenMatches = true;
-    for (let i in scoreArray) {
-      let arr = scoreArray[i];
-      if (i != 0) {
-        PlayerModel.updateMany({ Verified: true, LoggedIn: true, Username: arr.username }, { $inc: { Losses: 1 } }).then((res) => {});
-      }
-    }
-    PlayerModel.updateMany({ Verified: true, LoggedIn: true }, { $set: { Score: 0, HP: 100 } }).then((res) => {});
+    io.emit("Match finished");
     if (scoreArray[0]) {
-      PlayerModel.updateOne({ Verified: true, LoggedIn: true, Username: scoreArray[0].username }, { $inc: { Wins: 1 } }).then((res) => {});
-      timeArray.push({ username: scoreArray[0].username, score: scoreArray[0].score, date: new Date() });
-      for (let i in timeArray) {
-        let arr = timeArray[i];
-        ProgressModel.findOne({ Username: arr.username }, (err, res) => {
+      io.emit("leaderboard scores", scoreArray);
+      if (scoreArray[0].score !== 0) {
+        timeArray = { username: scoreArray[0].username, score: scoreArray[0].score, date: new Date() };
+        await ProgressModel.findOne({ Username: timeArray.username }, async (err, res) => {
           if (res) {
-            res.DatesWon.push(arr);
-            ProgressModel.updateOne({ Username: arr.username }, { $set: { DatesWon: res.DatesWon } }).then((res) => {});
-          }
-          if (!res) {
+            console.log(res.DatesWon, "1");
+            res.DatesWon.push(timeArray);
+            console.log(res.DatesWon, "2");
+            await ProgressModel.updateOne({ Username: timeArray.username }, { $set: { DatesWon: res.DatesWon } }).then((res) => {
+              if (res) {
+                ProgressModel.find({}, (err, res) => {
+                  if (res) {
+                    for (let i in res) {
+                      let arr = res[i];
+                      if (arr.DatesWon.length > 0) {
+                        console.log("sending");
+                        socket.emit("Past winners", removeDupes2(arr.DatesWon));
+                      }
+                    }
+                  }
+                  if (err) {
+                    console.error(err);
+                  }
+                });
+              }
+            });
+          } else if (!res) {
             console.log("no progress document exists with this username");
           }
           if (err) {
             console.error(err);
+          }
+        });
+      } else if (scoreArray[0].score == 0) {
+        console.log("no winners");
+      }
+    } else if (!scoreArray[0]) {
+      console.log("scoreArray[0] is not defined");
+    }
+
+    for (let i in scoreArray) {
+      let arr = scoreArray[i];
+      if (i != 0) {
+        PlayerModel.updateMany({ Verified: true, LoggedIn: true, Username: arr.username }, { $inc: { Losses: 1 } }).then((res) => {
+          if (res) {
+            console.log("updated losses");
+          } else if (!res) {
+            console.error("could not update the losses");
+          }
+        });
+      }
+    }
+    PlayerModel.updateMany({ Verified: true }, { $set: { Score: 0, HP: 100 } }).then((res) => {
+      if (res) {
+        console.log("reset scores and hp");
+      } else if (!res) {
+        console.error("could not reset scores and HP");
+      }
+    });
+
+    if (scoreArray[0]) {
+      if (scoreArray[0].score !== 0) {
+        PlayerModel.updateOne({ Verified: true, LoggedIn: true, Username: scoreArray[0].username }, { $inc: { Wins: 1 } }).then((res) => {
+          if (res) {
+            console.log("incremented wins");
+          } else if (!res) {
+            console.error("could not increment wins");
           }
         });
       }
