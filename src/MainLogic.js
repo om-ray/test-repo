@@ -41,8 +41,8 @@ export function roundRect(ctx, x, y, width, height, radius, fill, stroke, fillco
   if (typeof radius === "number") {
     radius = { tl: radius.tl, tr: radius.tr, br: radius.br, bl: radius.bl };
   } else {
-    var defaultRadius = { tl: 0, tr: 0, br: 0, bl: 0 };
-    for (var side in defaultRadius) {
+    let defaultRadius = { tl: 0, tr: 0, br: 0, bl: 0 };
+    for (let side in defaultRadius) {
       radius[side] = radius[side] || defaultRadius[side];
     }
   }

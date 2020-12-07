@@ -1,8 +1,8 @@
 let canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
-let bulletSpeed = 10;
+let bulletSpeed = 30;
 let width = 2;
-let height = 2;
+let height = 3;
 
 let Bullet = function (props) {
   let p = props;
@@ -31,7 +31,9 @@ let Bullet = function (props) {
 
   this.draw = function () {
     ctx.fillStyle = this.color;
+    ctx.strokeStyle = "black";
     ctx.fillRect(this.x, this.y, this.width, this.height);
+    ctx.strokeRect(this.x - 1, this.y - 1, this.width + 1, this.height + 1);
     // label.draw();
   };
 

@@ -22,6 +22,10 @@ app.get("/", function (req, res) {
   res.sendFile(__dirname + "/index.html");
 });
 
+app.get("/warmap", function (req, res) {
+  res.sendFile(__dirname + "/src/Assets/Maps/warmap.json");
+});
+
 app.use("/dist", express.static(__dirname + "/dist"));
 app.use("/admin", express.static(__dirname + "/src/Admin.html"));
 app.use("/admin.js", express.static(__dirname + "/src/admin.js"));
@@ -106,7 +110,7 @@ let current_seconds2;
 let matchIsStarting = false;
 let matchIsEnding = false;
 let betweenMatches = false;
-let duration = 300;
+let duration = 50;
 let rest = 60;
 
 let countdown = function (seconds) {
@@ -255,14 +259,17 @@ io.on("connection", function (socket) {
   });
 
   socket.on("Log in attempt", function (logInInfo) {
+    // console.log(new Date().toLocaleString(), "1111");
     PlayerModel.findOne({ Username: logInInfo.username }, (err, res) => {
+      // console.log(new Date().toLocaleString(), "2222");
       if (res) {
+        // console.log(new Date().toLocaleString(), "3333");
         if (res.checkPassword(logInInfo.password)) {
-          // console.log("password is correct", new Date().toLocaleString());
+          console.log("password is correct", new Date().toLocaleString());
           if (res.checkVerification()) {
-            // console.log("account is verified", new Date().toLocaleString());
+            console.log("account is verified", new Date().toLocaleString());
             if (!res.checkLoggedIn()) {
-              // console.log("account is not logged in", new Date().toLocaleString());
+              console.log("account is not logged in", new Date().toLocaleString());
               socket.emit("Log in successful");
               for (let i in playerList) {
                 if (playerList[i].id == socket.id) {
@@ -360,9 +367,17 @@ io.on("connection", function (socket) {
 
   socket.on("score went up", function (score, username) {
     socket.broadcast.emit("updated player score", username, score + 1);
+    console.log(scoreArray, "1");
     scoreArray.push({ username: username, score: score + 1 });
+    console.log(scoreArray, "2");
     removeDupes(scoreArray);
+    console.log(scoreArray, "3");
     sortArray(scoreArray);
+    console.log(scoreArray, "4");
+    removeDupes(scoreArray);
+    console.log(scoreArray, "5");
+    sortArray(scoreArray);
+    console.log(scoreArray, "6");
     PlayerModel.updateOne({ Username: username }, { $set: { Score: score + 1 } }, { upsert: false }).then((res) => {});
   });
 
@@ -438,6 +453,7 @@ io.on("connection", function (socket) {
         socketList.splice(i, 1);
       }
     }
+    socket.disconnect(true);
   });
 });
 
@@ -462,31 +478,21 @@ setInterval(async () => {
     matchIsEnding = false;
     betweenMatches = true;
     io.emit("Match finished");
+    console.log(new Date().toLocaleString(), "1");
     if (scoreArray[0]) {
+      console.log(new Date().toLocaleString(), "2");
       io.emit("leaderboard scores", scoreArray);
       if (scoreArray[0].score !== 0) {
+        console.log(new Date().toLocaleString(), "3");
         timeArray = { username: scoreArray[0].username, score: scoreArray[0].score, date: new Date() };
+        io.emit("new winner", timeArray);
         await ProgressModel.findOne({ Username: timeArray.username }, async (err, res) => {
           if (res) {
-            console.log(res.DatesWon, "1");
             res.DatesWon.push(timeArray);
-            console.log(res.DatesWon, "2");
+            console.log(new Date().toLocaleString(), "4");
             await ProgressModel.updateOne({ Username: timeArray.username }, { $set: { DatesWon: res.DatesWon } }).then((res) => {
               if (res) {
-                ProgressModel.find({}, (err, res) => {
-                  if (res) {
-                    for (let i in res) {
-                      let arr = res[i];
-                      if (arr.DatesWon.length > 0) {
-                        console.log("sending");
-                        socket.emit("Past winners", removeDupes2(arr.DatesWon));
-                      }
-                    }
-                  }
-                  if (err) {
-                    console.error(err);
-                  }
-                });
+                console.log(new Date().toLocaleString(), "5");
               }
             });
           } else if (!res) {
@@ -494,6 +500,8 @@ setInterval(async () => {
           }
           if (err) {
             console.error(err);
+          } else if (!res || !err) {
+            console.log("no return");
           }
         });
       } else if (scoreArray[0].score == 0) {
@@ -534,5 +542,7 @@ setInterval(async () => {
         });
       }
     }
+    scoreArray = [];
+    timeArray = [];
   }
 }, 10);

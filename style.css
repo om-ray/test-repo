@@ -24,9 +24,10 @@ body {
   left: 0;
   top: 0;
   overflow: hidden;
-  max-width: 3840px;
-  max-height: 2160px;
-  background-color: rgb(255, 255, 255);
+  max-width: 10000px;
+  max-height: 10000px;
+  image-rendering: pixelated;
+  /* background-color: rgb(255, 255, 255); */
 }
 
 #logInSignUpContainer {

@@ -1,7 +1,7 @@
 import Bullet from "./Bullet";
 let canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
-let playerSpeed = 2;
+let playerSpeed = 4;
 let playerDamage = 1;
 let Img = {};
 
@@ -52,6 +52,7 @@ let Player = function (props) {
   this.sprite = sprites[0]();
   this.username = p.username;
   this.email = p.email;
+  this.type = p.type;
   this.x = p.x;
   this.y = p.y;
   this.width = 32;
@@ -66,9 +67,10 @@ let Player = function (props) {
   this.score = 0;
   this.sx = 0;
   this.sy = 0;
-  this.type = p.type;
   this.loggedIn = false;
   this.afk = false;
+  this.prevX;
+  this.prevY;
   this.bulletList = [];
   this.ammoLimit = 500;
   this.ammoLeft = this.ammoLimit;
@@ -89,23 +91,25 @@ let Player = function (props) {
   this.reloading = false;
 
   this.draw = () => {
-    ctx.drawImage(Img.player, this.sx, this.sy, this.width, this.height, this.x, this.y, this.width, this.height);
-    if (this.loggedIn == false) {
-      ctx.drawImage(Img.forcefield, this.x - this.width / 1.4, this.y - this.height / 4, this.height + 30, this.height + 30);
+    if (this.loggedIn == true) {
+      ctx.drawImage(Img.player, this.sx, this.sy, this.width, this.height, this.x, this.y, this.width, this.height);
+      // if (this.loggedIn == false) {
+      // ctx.drawImage(Img.forcefield, this.x - this.width / 1.4, this.y - this.height / 4, this.height + 30, this.height + 30);
+      // }
+      if (this.afk == true) {
+        ctx.fillStyle = "black";
+        ctx.font = "13px courier";
+        ctx.fillText("This player is AFK", this.x - 50, this.y - 20);
+        ctx.drawImage(Img.forcefield, this.x - this.width / 1.4, this.y - this.height / 4, this.height + 30, this.height + 30);
+      }
+      for (let i in this.bulletList) {
+        this.bulletList[i].move();
+        this.bulletList[i].draw();
+      }
+      this.drawAccesories();
+      this.resetBulletlist();
+      this.action();
     }
-    if (this.afk == true) {
-      ctx.fillStyle = "black";
-      ctx.font = "13px courier";
-      ctx.fillText("This player is AFK", this.x - 50, this.y - 20);
-      ctx.drawImage(Img.forcefield, this.x - this.width / 1.4, this.y - this.height / 4, this.height + 30, this.height + 30);
-    }
-    for (let i in this.bulletList) {
-      this.bulletList[i].move();
-      this.bulletList[i].draw();
-    }
-    this.drawAccesories();
-    this.resetBulletlist();
-    this.action();
   };
 
   this.delete = () => {
@@ -204,24 +208,43 @@ let Player = function (props) {
 
   this.action = () => {
     if (this.direction.up) {
+      this.prevX = this.x;
+      this.prevY = this.y;
       this.sy = 144;
       this.sx += this.width;
       this.y -= this.speed;
+      // ctx.translate(0, this.speed);
     }
     if (this.direction.left) {
+      this.prevX = this.x;
+      this.prevY = this.y;
       this.sy = 48;
       this.sx += this.width;
       this.x -= this.speed;
+      // ctx.translate(this.speed, 0);
     }
     if (this.direction.down) {
+      this.prevX = this.x;
+      this.prevY = this.y;
       this.sy = 0;
       this.sx += this.width;
       this.y += this.speed;
+      // ctx.translate(0, -this.speed);
     }
     if (this.direction.right) {
+      this.prevX = this.x;
+      this.prevY = this.y;
       this.sy = 96;
       this.sx += this.width;
       this.x += this.speed;
+      // ctx.translate(-this.speed, 0);
+    }
+    if (!this.direction.up && !this.direction.left && !this.direction.down && !this.direction.right) {
+      this.prevX = this.x;
+      this.prevY = this.y;
+    } else if (typeof this.prevX == "undefined" || typeof this.prevY == "undefined") {
+      this.prevX = this.x;
+      this.prevY = this.y;
     }
     if (this.attacking && this.ammoLeft !== 0 && !this.reloading) {
       let newBullet = new Bullet({
@@ -362,10 +385,10 @@ let UsernameLabel = function (props) {
     ctx.font = "15px courier";
     if (this.main) {
       ctx.fillStyle = "#363930";
-      ctx.fillRect(this.x - 3, this.y - 12, this.value.toString().length * 11, 15);
+      ctx.fillRect(this.x - 3, this.y - 15, this.value.toString().length * 11, 15);
     }
     ctx.fillStyle = this.main ? "rgb(225 103 253)" : "red";
-    ctx.fillText(this.value, this.x, this.y);
+    ctx.fillText(this.value, this.x, this.y - 3);
   };
 };
 

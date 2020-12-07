@@ -1,8 +1,11 @@
 import moment from "moment";
 import Bullet from "./Bullet";
+import Viewport from "./Viewport";
 import { actionLogic, checkCollision, createPlayer, roundRect, sortArrayByDate, sortArray, removeDupes } from "./MainLogic";
 let canvas = document.getElementById("canvas");
+let timeCanvas = document.getElementById("timeCanvas");
 let ctx = canvas.getContext("2d");
+let timeCtx = timeCanvas.getContext("2d");
 let LogInOrSignUp = document.getElementById("LogInOrSignUp");
 let usernameInput = document.getElementById("usernameInput");
 let emailInput = document.getElementById("emailInput");
@@ -38,6 +41,8 @@ let username = usernameInput.value;
 let email = emailInput.value;
 let password = passwordInput.value;
 let parsedTime;
+let firstTime = true;
+let prevMapCoords = { x: 0, y: 0 };
 let usernameAndScoreArray = [];
 let allowPvp = true;
 let submitting = false;
@@ -315,6 +320,8 @@ socket.on("players updated info", function (playerData) {
     if (player.id == playerData.id) {
       player.x = playerData.x;
       player.y = playerData.y;
+      player.prevX = playerData.prevX;
+      player.prevY = playerData.prevY;
       player.health = playerData.health;
       player.sx = playerData.sx;
       player.sy = playerData.sy;
@@ -364,6 +371,8 @@ let sendPlayerInfo = function () {
     id: mainPlayer.id,
     x: mainPlayer.x,
     y: mainPlayer.y,
+    prevX: mainPlayer.prevX,
+    prevY: mainPlayer.prevY,
     health: mainPlayer.health,
     sx: mainPlayer.sx,
     sy: mainPlayer.sy,
@@ -467,7 +476,7 @@ socket.on("other player", function (them) {
 socket.on("Match starting", function () {
   if (loggedIn) {
     window.alert("Match starting");
-    socket.emit("send past winners");
+    // socket.emit("send past winners");
     mainPlayer.score = 0;
     mainPlayer.health = 100;
     mainPlayer.bulletList = [];
@@ -500,7 +509,7 @@ socket.on("current time2", function (time) {
 socket.on("Match finished", function () {
   if (loggedIn) {
     window.alert("Match finished");
-    socket.emit("send past winners");
+    // socket.emit("send past winners");
     mainPlayer.score = 0;
     mainPlayer.health = 100;
     mainPlayer.bulletList = [];
@@ -515,6 +524,72 @@ socket.on("Match finished", function () {
     allowPvp = false;
   }
 });
+
+let tileset = new Image();
+let viewport = new Viewport(0, 0, canvas.width, canvas.height);
+tileset.src = "../images/tileset-pokemon_dawn.png";
+let mapJson;
+let startX;
+let startY;
+let clippingWidth;
+let clippingHeight;
+let placeX = 0;
+let placeY = 0;
+let tileScale = 3;
+let mapWidth = 2000;
+let mapheight = 2000;
+let tileSize = 16 * tileScale;
+let mapWidthTotal = mapWidth * tileSize;
+let mapHeightTotal = mapheight * tileSize;
+let xmlhttp = new XMLHttpRequest();
+xmlhttp.onreadystatechange = function () {
+  if (this.readyState == 4 && this.status == 200) {
+    mapJson = JSON.parse(this.responseText);
+  }
+};
+xmlhttp.open("GET", "/warmap", true);
+xmlhttp.send();
+
+let in_viewport = function (x, y) {
+  if (x >= -100 && x <= canvas.width + 100 && y >= -100 && y <= canvas.height + 100) {
+    return true;
+  } else {
+    return false;
+  }
+};
+
+let updateMap = function () {
+  // let min_x = Math.floor(viewport.x / 32);
+  // let min_y = Math.floor(viewport.y / 32);
+  // let max_x = Math.ceil((viewport.x + viewport.w) / 32);
+  // let max_y = Math.ceil((viewport.y + viewport.h) / 32);
+
+  for (let i = 0; i < mapJson.layers.length; i++) {
+    for (let u = 0; u < mapJson.layers[i].data.length; u++) {
+      let dataValues = mapJson.layers[i].data[u] - 1;
+      startX = (dataValues % 94) * 16;
+      startY = Math.floor(dataValues / 94) * 16;
+      clippingWidth = 16;
+      clippingHeight = 16;
+      placeX = (u % mapJson.layers[i].width) * 16;
+      placeY = Math.floor(u / mapJson.layers[i].height) * 16;
+
+      if (in_viewport(placeX, placeY)) {
+        ctx.drawImage(
+          tileset,
+          Math.floor(startX),
+          Math.floor(startY),
+          clippingWidth,
+          clippingHeight,
+          Math.floor(tileScale * placeX),
+          Math.floor(tileScale * placeY),
+          clippingWidth * tileScale,
+          clippingHeight * tileScale
+        );
+      }
+    }
+  }
+};
 
 let addToLeaderboard = function (place, username, score) {
   let row = document.createElement("tr");
@@ -578,22 +653,27 @@ socket.on("someone disconnected", function (disconnector) {
 
 socket.on("Past winners", function (winners) {
   console.log("past winners");
-  pastWinnersArray.push(winners);
+  pastWinnersArray.push(removeDupes(winners));
+  pastWinnersLogic();
+});
+
+socket.on("new winner", function (winner) {
+  pastWinnersArray.push(winner);
   pastWinnersLogic();
 });
 
 let pastWinnersLogic = function () {
   pastWinnersArrayFlattened = [];
   pastWinnersTableBody.innerHTML = "";
-  console.log(removeDupes(pastWinnersArray.flat()));
-  pastWinnersArrayFlattened = removeDupes(pastWinnersArray.flat());
+  pastWinnersArrayFlattened = pastWinnersArray.flat();
+  let pastWinnersArrayFlattenedAndFiltered = removeDupes(pastWinnersArrayFlattened);
   if (byScore) {
-    sortArray(pastWinnersArrayFlattened);
+    sortArray(pastWinnersArrayFlattenedAndFiltered);
   } else if (byDate) {
-    sortArrayByDate(pastWinnersArrayFlattened);
+    sortArrayByDate(pastWinnersArrayFlattenedAndFiltered);
   }
-  for (let i in removeDupes(pastWinnersArrayFlattened)) {
-    let arr = removeDupes(pastWinnersArrayFlattened)[i];
+  for (let i in removeDupes(pastWinnersArrayFlattenedAndFiltered)) {
+    let arr = removeDupes(pastWinnersArrayFlattenedAndFiltered)[i];
     let today = moment(arr.date).format("L LT");
     addToPastWinners(today, arr.username, arr.score);
   }
@@ -627,21 +707,34 @@ let leaderboardLogic = async function () {
 };
 
 let drawTime = function () {
-  roundRect(ctx, 0, 0, 400, 45, { tl: 0, tr: 0, br: 10, bl: 0 }, true, true, "rgba(35, 172, 251, 0.8)", "black");
-  ctx.fillStyle = "black";
-  ctx.textAlign = "left";
-  ctx.font = "30px Courier";
-  ctx.fillText(parsedTime, 10, 30);
+  roundRect(timeCtx, 0, 0, 400, 45, { tl: 0, tr: 0, br: 10, bl: 0 }, true, true, "rgba(35, 172, 251, 0.8)", "black");
+  timeCtx.fillStyle = "black";
+  timeCtx.textAlign = "left";
+  timeCtx.font = "30px Courier";
+  timeCtx.fillText(parsedTime, 10, 30);
 };
 
 let drawingLoop = function () {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  drawTime();
   getLeaderboardValues();
   actionLogic(mainPlayer);
+  viewport.scroll(mainPlayer.x - canvas.width / 2, mainPlayer.y - canvas.height / 2);
+  if (mainPlayer.x <= mapWidthTotal - canvas.width / 2 && mainPlayer.x >= 0 + canvas.width / 2) {
+    ctx.save();
+    prevMapCoords = { x: canvas.x, y: canvas.y };
+    ctx.translate(-1 * (viewport.x + 100), -1 * (viewport.y + 100));
+  } else {
+    ctx.translate(prevMapCoords.x, 0);
+  }
+  console.log(prevMapCoords);
+  updateMap();
+  drawTime();
   PlayerList.forEach((player) => {
     player.draw();
   });
+  if (mainPlayer.x <= mapWidthTotal - canvas.width / 2 && mainPlayer.x >= 0 + canvas.width / 2) {
+    ctx.restore();
+  }
 };
 
 let Game_loop = function () {
