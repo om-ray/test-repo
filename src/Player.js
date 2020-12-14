@@ -248,7 +248,7 @@ let Player = function (props) {
     }
     if (this.attacking && this.ammoLeft !== 0 && !this.reloading) {
       let newBullet = new Bullet({
-        x: this.x + this.width / 2,
+        x: this.x + this.width / 4,
         y: this.y + this.height / 2,
         direction: this.lastDirection,
         shooter: this.id,

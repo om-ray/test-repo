@@ -59,6 +59,9 @@ export function roundRect(ctx, x, y, width, height, radius, fill, stroke, fillco
   ctx.lineTo(x, y + radius.tl);
   ctx.quadraticCurveTo(x, y, x + radius.tl, y);
   ctx.closePath();
+  ctx.fillStyle = fillcolor;
+  ctx.lineWidth = "1px";
+  ctx.strokeStyle = strokecolor;
   if (fill) {
     ctx.fill();
   }

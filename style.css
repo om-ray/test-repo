@@ -30,6 +30,15 @@ body {
   /* background-color: rgb(255, 255, 255); */
 }
 
+#timeCanvas {
+  position: absolute;
+  left: 0;
+  top: 0;
+  overflow: hidden;
+  image-rendering: crisp-edges;
+  /* background-color: rgb(255, 255, 255); */
+}
+
 #logInSignUpContainer {
   display: flex;
   position: absolute;
@@ -149,20 +158,21 @@ tr:nth-child(odd:not(1)) {
 
 #title {
   z-index: 5;
-  font-size: 4rem;
+  font-size: 3rem;
   font-family: "megrim";
   position: absolute;
   top: 10%;
   padding: 2% 5%;
   background-repeat: repeat repeat;
-  background-size: 80% 70%;
+  background-size: 70% 70%;
   /* background-position: center center; */
+  transition: none;
   background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='white' stroke-width='4' stroke-dasharray='6%2c 40%2c 1' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
-  -moz-animation: glitch-title-background 0.1ms linear infinite;
-  -ms-animation: glitch-title-background 0.1ms linear infinite;
-  -o-animation: glitch-title-background 0.1ms linear infinite;
-  -webkit-animation: glitch-title-background 0.1ms linear infinite;
-  animation: glitch-title-background 0.1ms linear infinite;
+  -moz-animation: glitch-title-background 0.02ms linear infinite;
+  -ms-animation: glitch-title-background 0.02ms linear infinite;
+  -o-animation: glitch-title-background 0.02ms linear infinite;
+  -webkit-animation: glitch-title-background 0.02ms linear infinite;
+  animation: glitch-title-background 0.02ms linear infinite;
 }
 
 @media only screen and (max-width: 400px) {

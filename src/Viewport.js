@@ -4,9 +4,11 @@ let Viewport = function (x, y, w, h) {
   this.w = w;
   this.h = h;
 
-  this.scroll = function (x, y) {
+  this.scroll = function (x, y, w, h) {
     this.x = x;
     this.y = y;
+    // this.w = w;
+    // this.h = h;
   };
 };
 

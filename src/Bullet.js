@@ -1,8 +1,10 @@
 let canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
 let bulletSpeed = 30;
-let width = 2;
-let height = 3;
+let width = 16;
+let height = 16;
+let bulletImage = new Image();
+bulletImage.src = "../images/bullets.png";
 
 let Bullet = function (props) {
   let p = props;
@@ -15,7 +17,10 @@ let Bullet = function (props) {
   this.direction = p.direction;
   this.shooter = p.shooter;
   this.substitute = p.substitute;
-  this.color = "red";
+  this.color = "white";
+  this.Image = bulletImage;
+  this.sx = 0;
+  this.sy = 0;
   this.collisionBox = {
     x: this.x,
     y: this.y,
@@ -30,28 +35,82 @@ let Bullet = function (props) {
   });
 
   this.draw = function () {
-    ctx.fillStyle = this.color;
-    ctx.strokeStyle = "black";
-    ctx.fillRect(this.x, this.y, this.width, this.height);
-    ctx.strokeRect(this.x - 1, this.y - 1, this.width + 1, this.height + 1);
+    // ctx.fillStyle = this.color;
+    // ctx.strokeStyle = "black";
+    // ctx.lineWidth = "1px";
+    // ctx.fillRect(this.x, this.y, this.width, this.height);
+    // ctx.strokeRect(this.x - 1, this.y - 1, this.width + 1, this.height + 1);
+    let radgrad4 = ctx.createRadialGradient(this.x + 8, this.y + 8, 8, this.x, this.y, 32);
+    radgrad4.addColorStop(0, "rgba(0, 150, 255, 0.5)");
+    radgrad4.addColorStop(0.5, "rgba(0, 200, 255, 0.5)");
+    radgrad4.addColorStop(1, "rgba(255, 255, 255, 0.01)");
+    if (this.direction == "right") {
+      ctx.fillStyle = radgrad4;
+      ctx.beginPath();
+      ctx.moveTo(this.x + 8, this.y);
+      ctx.lineTo(this.x - 20, this.y + 8);
+      ctx.lineTo(this.x + 8, this.y + 16);
+      ctx.fill();
+    }
+    if (this.direction == "up") {
+      ctx.fillStyle = radgrad4;
+      ctx.beginPath();
+      ctx.moveTo(this.x, this.y + 8);
+      ctx.lineTo(this.x + 8, this.y + 28);
+      ctx.lineTo(this.x + 16, this.y + 8);
+      ctx.fill();
+    }
+    if (this.direction == "left") {
+      ctx.fillStyle = radgrad4;
+      ctx.beginPath();
+      ctx.moveTo(this.x + 8, this.y);
+      ctx.lineTo(this.x + 28, this.y + 8);
+      ctx.lineTo(this.x + 8, this.y + 16);
+      ctx.fill();
+    }
+    if (this.direction == "down") {
+      ctx.fillStyle = radgrad4;
+      ctx.beginPath();
+      ctx.moveTo(this.x, this.y + 8);
+      ctx.lineTo(this.x + 8, this.y - 20);
+      ctx.lineTo(this.x + 16, this.y + 8);
+      ctx.fill();
+    }
+    // ctx.fillRect(this.x - 32 + 8, this.y, 32, 4);
+    // ctx.fillStyle = "rgba(0, 150, 255, 0.2)";
+    // ctx.fillRect(this.x - 40 + 8, this.y + 4, 40, 8);
+    // ctx.fillStyle = "rgba(0, 150, 255, 0.1)";
+    // ctx.fillRect(this.x - 32 + 8, this.y + 12, 32, 4);
+    ctx.drawImage(this.Image, this.sx, this.sy, 16, 16, this.x, this.y, 16, 16);
     // label.draw();
   };
 
   this.move = function () {
     if (this.direction === "up") {
+      // this.sx += 16;
       this.y -= this.speed;
     }
     if (this.direction === "left") {
+      // this.sx += 16;
       this.x -= this.speed;
     }
     if (this.direction === "down") {
+      // this.sx += 16;
       this.y += this.speed;
     }
     if (this.direction === "right") {
+      // this.sx += 16;
       this.x += this.speed;
     }
     this.update();
+    this.draw();
   };
+
+  // this.resetSx = function () {
+  //   if (this.sx >= 32) {
+  //     this.sx = 0;
+  //   }
+  // };
 
   this.erase = function () {
     ctx.clearRect(this.x, this.y, this.width, this.height);
@@ -75,6 +134,8 @@ let Bullet = function (props) {
     };
     label.x = this.x;
     label.y = this.y;
+    // this.resetSx();
+    this.speed += 1;
   };
 };
 

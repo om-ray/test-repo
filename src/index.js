@@ -41,6 +41,11 @@ let username = usernameInput.value;
 let email = emailInput.value;
 let password = passwordInput.value;
 let parsedTime;
+let devW = window.innerWidth;
+let devH = window.innerHeight;
+let resW = 1920;
+let resH = 1080;
+console.log(document.documentElement.clientWidth, document.documentElement.clientHeight);
 let firstTime = true;
 let prevMapCoords = { x: 0, y: 0 };
 let usernameAndScoreArray = [];
@@ -279,10 +284,19 @@ socket.on("This player is already logged in", function () {
 });
 
 function resizeCanvas() {
-  let width = document.documentElement.clientWidth;
-  let height = document.documentElement.clientHeight;
-  canvas.width = width;
-  canvas.height = height;
+  let f = Math.max(window.innerWidth / resW, window.innerHeight / resH);
+  canvas.width = Math.floor(devW / f);
+  canvas.height = Math.floor(devH / f);
+  canvas.style.width = "100%";
+  // canvas.style.height = "100%";
+  canvas.width = resW;
+  canvas.height = resH;
+  timeCanvas.width = Math.floor(devW / f);
+  timeCanvas.height = Math.floor(devH / f);
+  timeCanvas.style.width = "100%";
+  // timeCanvas.style.height = "100%";
+  timeCanvas.width = resW;
+  timeCanvas.height = resH;
 }
 
 window.addEventListener("resize", () => {
@@ -535,12 +549,15 @@ let clippingWidth;
 let clippingHeight;
 let placeX = 0;
 let placeY = 0;
-let tileScale = 3;
+let tileScale = 5;
 let mapWidth = 2000;
-let mapheight = 2000;
+let mapHeight = 2000;
 let tileSize = 16 * tileScale;
-let mapWidthTotal = mapWidth * tileSize;
-let mapHeightTotal = mapheight * tileSize;
+let canvasWidthInTiles = Math.floor(canvas.width / tileSize);
+let canvasHeightInTiles = Math.floor(canvas.height / tileSize);
+let totalNumberOfNecessaryTiles = Math.floor(canvasHeightInTiles * canvasWidthInTiles) * mapWidth;
+let mainPlayerIndex = Math.floor((mainPlayer.x * mainPlayer.y) / tileSize) % (mapWidth * mapHeight);
+let leftMostIndex = Math.floor((viewport.x / tileSize) * (viewport.y / tileSize));
 let xmlhttp = new XMLHttpRequest();
 xmlhttp.onreadystatechange = function () {
   if (this.readyState == 4 && this.status == 200) {
@@ -551,7 +568,7 @@ xmlhttp.open("GET", "/warmap", true);
 xmlhttp.send();
 
 let in_viewport = function (x, y) {
-  if (x >= -100 && x <= canvas.width + 100 && y >= -100 && y <= canvas.height + 100) {
+  if (x >= viewport.x - tileSize && x <= viewport.x + viewport.w && y >= viewport.y - tileSize && y <= viewport.y + viewport.h) {
     return true;
   } else {
     return false;
@@ -559,33 +576,20 @@ let in_viewport = function (x, y) {
 };
 
 let updateMap = function () {
-  // let min_x = Math.floor(viewport.x / 32);
-  // let min_y = Math.floor(viewport.y / 32);
-  // let max_x = Math.ceil((viewport.x + viewport.w) / 32);
-  // let max_y = Math.ceil((viewport.y + viewport.h) / 32);
-
   for (let i = 0; i < mapJson.layers.length; i++) {
-    for (let u = 0; u < mapJson.layers[i].data.length; u++) {
+    for (let u = totalNumberOfNecessaryTiles; u >= leftMostIndex; u--) {
       let dataValues = mapJson.layers[i].data[u] - 1;
       startX = (dataValues % 94) * 16;
       startY = Math.floor(dataValues / 94) * 16;
       clippingWidth = 16;
       clippingHeight = 16;
-      placeX = (u % mapJson.layers[i].width) * 16;
-      placeY = Math.floor(u / mapJson.layers[i].height) * 16;
+      placeX = (u % mapJson.layers[i].width) * 16 * tileScale;
+      placeY = Math.floor(u / mapJson.layers[i].height) * 16 * tileScale;
 
       if (in_viewport(placeX, placeY)) {
-        ctx.drawImage(
-          tileset,
-          Math.floor(startX),
-          Math.floor(startY),
-          clippingWidth,
-          clippingHeight,
-          Math.floor(tileScale * placeX),
-          Math.floor(tileScale * placeY),
-          clippingWidth * tileScale,
-          clippingHeight * tileScale
-        );
+        ctx.drawImage(tileset, Math.floor(startX), Math.floor(startY), clippingWidth, clippingHeight, placeX, placeY, tileSize, tileSize);
+        // ctx.strokeRect(placeX, placeY, clippingWidth * tileScale, clippingHeight * tileScale);
+        // ctx.fillText(u, placeX + 8, placeY + (clippingHeight * tileScale) / 2);
       }
     }
   }
@@ -707,10 +711,10 @@ let leaderboardLogic = async function () {
 };
 
 let drawTime = function () {
-  roundRect(timeCtx, 0, 0, 400, 45, { tl: 0, tr: 0, br: 10, bl: 0 }, true, true, "rgba(35, 172, 251, 0.8)", "black");
+  roundRect(timeCtx, 0, 0, 300, 45, { tl: 0, tr: 0, br: 20, bl: 0 }, true, true, "rgba(35, 172, 251, 0.8)", "black");
   timeCtx.fillStyle = "black";
   timeCtx.textAlign = "left";
-  timeCtx.font = "30px Courier";
+  timeCtx.font = "1.2rem Courier";
   timeCtx.fillText(parsedTime, 10, 30);
 };
 
@@ -718,23 +722,26 @@ let drawingLoop = function () {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   getLeaderboardValues();
   actionLogic(mainPlayer);
+  ctx.save();
+  viewport.w = canvas.width;
+  viewport.h = canvas.height;
   viewport.scroll(mainPlayer.x - canvas.width / 2, mainPlayer.y - canvas.height / 2);
-  if (mainPlayer.x <= mapWidthTotal - canvas.width / 2 && mainPlayer.x >= 0 + canvas.width / 2) {
-    ctx.save();
-    prevMapCoords = { x: canvas.x, y: canvas.y };
-    ctx.translate(-1 * (viewport.x + 100), -1 * (viewport.y + 100));
-  } else {
-    ctx.translate(prevMapCoords.x, 0);
-  }
-  console.log(prevMapCoords);
+  ctx.translate(-1 * viewport.x, -1 * viewport.y);
+  ctx.rect(viewport.x + 3, viewport.y + 3, viewport.w - 6, viewport.h - 6);
+  ctx.clip();
+  ctx.strokeStyle = "red";
+  ctx.lineWidth = "3px";
+  ctx.stroke();
+  leftMostIndex = Math.floor((viewport.x / tileSize) * (viewport.y / tileSize));
+  mainPlayerIndex = Math.floor((mainPlayer.x * mainPlayer.y) % (mapWidth * mapHeight));
+  totalNumberOfNecessaryTiles = Math.floor((canvas.width / tileSize) * (canvas.height / tileSize)) * mapWidth;
+  console.log(totalNumberOfNecessaryTiles, mapWidth);
   updateMap();
   drawTime();
   PlayerList.forEach((player) => {
     player.draw();
   });
-  if (mainPlayer.x <= mapWidthTotal - canvas.width / 2 && mainPlayer.x >= 0 + canvas.width / 2) {
-    ctx.restore();
-  }
+  ctx.restore();
 };
 
 let Game_loop = function () {
