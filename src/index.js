@@ -699,6 +699,22 @@ let updateMap = function () {
       mainPlayer.justRespawned = false;
       mainPlayer.respawn();
     }
+    if (
+      (waterTiles.includes(mapJson.layers[1]?.data[mainPlayerIndex + 1] - 1) ||
+        waterTiles.includes(mapJson.layers[1]?.data[mainPlayerIndex - mapWidth + 1] - 1) ||
+        waterTiles.includes(mapJson.layers[0].data[mainPlayerIndex + 1] - 1) ||
+        waterTiles.includes(mapJson.layers[0].data[mainPlayerIndex - mapWidth + 1] - 1)) &&
+      (waterTiles.includes(mapJson.layers[1]?.data[mainPlayerIndex - mapWidth] - 1) ||
+        waterTiles.includes(mapJson.layers[0].data[mainPlayerIndex - mapWidth] - 1)) &&
+      (waterTiles.includes(mapJson.layers[1]?.data[mainPlayerIndex - 1] - 1) ||
+        waterTiles.includes(mapJson.layers[1]?.data[mainPlayerIndex - mapWidth - 1] - 1) ||
+        waterTiles.includes(mapJson.layers[0].data[mainPlayerIndex - 1] - 1) ||
+        waterTiles.includes(mapJson.layers[0].data[mainPlayerIndex - mapWidth - 1] - 1)) &&
+      (waterTiles.includes(mapJson.layers[1]?.data[mainPlayerIndex + mapWidth] - 1) ||
+        waterTiles.includes(mapJson.layers[0].data[mainPlayerIndex + mapWidth] - 1))
+    ) {
+      mainPlayer.respawn();
+    }
   } else {
     mainPlayer.collisionDirection.right = false;
     mainPlayer.collisionDirection.up = false;

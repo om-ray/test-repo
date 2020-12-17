@@ -293,6 +293,10 @@ let Player = function (props) {
     this.health = this.healthMax;
     this.x = Math.abs(Math.floor(Math.random() * (mapWidth * (16 * 5) - 16 * 5)));
     this.y = Math.abs(Math.floor(Math.random() * (mapWidth * (16 * 5) - 16 * 5)));
+    this.direction.up = false;
+    this.direction.down = false;
+    this.direction.right = false;
+    this.direction.left = false;
     this.justRespawned = true;
   };
 
