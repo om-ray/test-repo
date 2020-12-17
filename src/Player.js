@@ -231,6 +231,7 @@ let Player = function (props) {
       this.sx += this.width;
       this.y -= this.speed;
       this.justRespawned = false;
+      this.direction.down = false;
       // ctx.translate(0, this.speed);
     }
     if (this.direction.left && !this.collisionDirection.left) {
@@ -240,6 +241,7 @@ let Player = function (props) {
       this.sx += this.width;
       this.x -= this.speed;
       this.justRespawned = false;
+      this.direction.right = false;
       // ctx.translate(this.speed, 0);
     }
     if (this.direction.down && !this.collisionDirection.down) {
@@ -249,6 +251,7 @@ let Player = function (props) {
       this.sx += this.width;
       this.y += this.speed;
       this.justRespawned = false;
+      this.direction.up = false;
       // ctx.translate(0, -this.speed);
     }
     if (this.direction.right && !this.collisionDirection.right) {
@@ -258,6 +261,7 @@ let Player = function (props) {
       this.sx += this.width;
       this.x += this.speed;
       this.justRespawned = false;
+      this.direction.left = false;
       // ctx.translate(-this.speed, 0);
     }
     if (!this.direction.up && !this.direction.left && !this.direction.down && !this.direction.right) {

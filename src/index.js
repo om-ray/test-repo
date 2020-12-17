@@ -655,6 +655,8 @@ let updateMap = function () {
         waterTiles.includes(mapJson.layers[0].data[mainPlayerIndex - mapWidth + 1] - 1))
     ) {
       mainPlayer.collisionDirection.right = true;
+      mainPlayer.x = mainPlayer.prevX;
+      mainPlayer.y = mainPlayer.prevY;
     } else {
       mainPlayer.collisionDirection.right = false;
     }
@@ -664,6 +666,8 @@ let updateMap = function () {
         waterTiles.includes(mapJson.layers[0].data[mainPlayerIndex - mapWidth] - 1))
     ) {
       mainPlayer.collisionDirection.up = true;
+      mainPlayer.x = mainPlayer.prevX;
+      mainPlayer.y = mainPlayer.prevY;
     } else {
       mainPlayer.collisionDirection.up = false;
     }
@@ -675,6 +679,8 @@ let updateMap = function () {
         waterTiles.includes(mapJson.layers[0].data[mainPlayerIndex - mapWidth - 1] - 1))
     ) {
       mainPlayer.collisionDirection.left = true;
+      mainPlayer.x = mainPlayer.prevX;
+      mainPlayer.y = mainPlayer.prevY;
     } else {
       mainPlayer.collisionDirection.left = false;
     }
@@ -684,6 +690,8 @@ let updateMap = function () {
         waterTiles.includes(mapJson.layers[0].data[mainPlayerIndex + mapWidth] - 1))
     ) {
       mainPlayer.collisionDirection.down = true;
+      mainPlayer.x = mainPlayer.prevX;
+      mainPlayer.y = mainPlayer.prevY;
     } else {
       mainPlayer.collisionDirection.down = false;
     }
