@@ -11,7 +11,7 @@ export let createPlayer = function (type) {
         username: "",
         email: "null",
         x: w / 2,
-        y: h / 2,
+        y: w / 2,
         type: type,
         health: 100,
         keys: ["w", "a", "s", "d", " ", "r"],
@@ -104,19 +104,16 @@ export let sortArrayByDate = async function (arr) {
 
 export let actionLogic = function (Player) {
   document.onkeydown = (e) => {
-    if (e.key === Player.keys[0]) {
+    if (e.key === Player.keys[0] && !Player.collisionDirection.up) {
       Player.direction.up = true;
       Player.lastDirection = "up";
-    }
-    if (e.key === Player.keys[1]) {
+    } else if (e.key === Player.keys[1] && !Player.collisionDirection.left) {
       Player.direction.left = true;
       Player.lastDirection = "left";
-    }
-    if (e.key === Player.keys[2]) {
+    } else if (e.key === Player.keys[2] && !Player.collisionDirection.down) {
       Player.direction.down = true;
       Player.lastDirection = "down";
-    }
-    if (e.key === Player.keys[3]) {
+    } else if (e.key === Player.keys[3] && !Player.collisionDirection.right) {
       Player.direction.right = true;
       Player.lastDirection = "right";
     }
@@ -134,16 +131,13 @@ export let actionLogic = function (Player) {
     if (e.key === Player.keys[0]) {
       Player.direction.up = false;
       Player.sx = 0;
-    }
-    if (e.key === Player.keys[1]) {
+    } else if (e.key === Player.keys[1]) {
       Player.direction.left = false;
       Player.sx = 0;
-    }
-    if (e.key === Player.keys[2]) {
+    } else if (e.key === Player.keys[2]) {
       Player.direction.down = false;
       Player.sx = 0;
-    }
-    if (e.key === Player.keys[3]) {
+    } else if (e.key === Player.keys[3]) {
       Player.direction.right = false;
       Player.sx = 0;
     }

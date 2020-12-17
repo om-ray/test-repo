@@ -78,6 +78,14 @@ body {
   padding: 10px;
 }
 
+#respawnBtn {
+  z-index: 10;
+  position: absolute;
+  top: 50%;
+  right: 25px;
+  padding: 10px;
+}
+
 #pastWinnersBtn {
   z-index: 10;
   position: absolute;

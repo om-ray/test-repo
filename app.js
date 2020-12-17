@@ -23,7 +23,7 @@ app.get("/", function (req, res) {
 });
 
 app.get("/warmap", function (req, res) {
-  res.sendFile(__dirname + "/src/Assets/Maps/warmap.json");
+  res.sendFile(__dirname + "/src/Assets/Maps/test-small.json");
 });
 
 app.use("/dist", express.static(__dirname + "/dist"));
@@ -78,7 +78,7 @@ let sendVerificationCode = function (email, code, username) {
     port: 587,
     secure: false,
     auth: {
-      user: "omihridesh",
+      user: "omihridesh@gmail.com",
       pass: "aq123edsMI.changed",
     },
     tls: {
@@ -110,7 +110,7 @@ let current_seconds2;
 let matchIsStarting = false;
 let matchIsEnding = false;
 let betweenMatches = false;
-let duration = 50;
+let duration = 300;
 let rest = 60;
 
 let countdown = function (seconds) {

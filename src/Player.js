@@ -1,7 +1,7 @@
 import Bullet from "./Bullet";
 let canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
-let playerSpeed = 4;
+let playerSpeed = 2;
 let playerDamage = 1;
 let Img = {};
 
@@ -45,6 +45,16 @@ Math.radians = function (degrees) {
 };
 
 let sprites = [Male1, Male2, Female1, Female2];
+let mapJson;
+let xmlhttp = new XMLHttpRequest();
+xmlhttp.onreadystatechange = function () {
+  if (this.readyState == 4 && this.status == 200) {
+    mapJson = JSON.parse(this.responseText);
+  }
+};
+xmlhttp.open("GET", "/warmap", true);
+xmlhttp.send();
+let mapWidth = mapJson?.layers[0]?.width;
 
 let Player = function (props) {
   let p = props;
@@ -73,6 +83,7 @@ let Player = function (props) {
   this.prevY;
   this.bulletList = [];
   this.ammoLimit = 500;
+  this.justRespawned = false;
   this.ammoLeft = this.ammoLimit;
   this.collisionBox = {
     x: this.x,
@@ -81,6 +92,12 @@ let Player = function (props) {
     yMax: this.y + this.height,
   };
   this.direction = {
+    up: false,
+    down: false,
+    left: false,
+    right: false,
+  };
+  this.collisionDirection = {
     up: false,
     down: false,
     left: false,
@@ -207,41 +224,45 @@ let Player = function (props) {
   };
 
   this.action = () => {
-    if (this.direction.up) {
+    if (this.direction.up && !this.collisionDirection.up) {
       this.prevX = this.x;
       this.prevY = this.y;
       this.sy = 144;
       this.sx += this.width;
       this.y -= this.speed;
+      this.justRespawned = false;
       // ctx.translate(0, this.speed);
     }
-    if (this.direction.left) {
+    if (this.direction.left && !this.collisionDirection.left) {
       this.prevX = this.x;
       this.prevY = this.y;
       this.sy = 48;
       this.sx += this.width;
       this.x -= this.speed;
+      this.justRespawned = false;
       // ctx.translate(this.speed, 0);
     }
-    if (this.direction.down) {
+    if (this.direction.down && !this.collisionDirection.down) {
       this.prevX = this.x;
       this.prevY = this.y;
       this.sy = 0;
       this.sx += this.width;
       this.y += this.speed;
+      this.justRespawned = false;
       // ctx.translate(0, -this.speed);
     }
-    if (this.direction.right) {
+    if (this.direction.right && !this.collisionDirection.right) {
       this.prevX = this.x;
       this.prevY = this.y;
       this.sy = 96;
       this.sx += this.width;
       this.x += this.speed;
+      this.justRespawned = false;
       // ctx.translate(-this.speed, 0);
     }
     if (!this.direction.up && !this.direction.left && !this.direction.down && !this.direction.right) {
-      this.prevX = this.x;
-      this.prevY = this.y;
+      // this.prevX = this.x;
+      // this.prevY = this.y;
     } else if (typeof this.prevX == "undefined" || typeof this.prevY == "undefined") {
       this.prevX = this.x;
       this.prevY = this.y;
@@ -266,8 +287,9 @@ let Player = function (props) {
 
   this.respawn = function () {
     this.health = this.healthMax;
-    this.x = Math.floor(Math.random() * canvas.width);
-    this.y = Math.floor(Math.random() * canvas.height);
+    this.x = Math.abs(Math.floor(Math.random() * (mapWidth * (16 * 5) - 16 * 5)));
+    this.y = Math.abs(Math.floor(Math.random() * (mapWidth * (16 * 5) - 16 * 5)));
+    this.justRespawned = true;
   };
 
   this.update = function () {
@@ -290,6 +312,7 @@ let Player = function (props) {
       this.needsToReload = true;
       this.attacking = false;
     }
+    mapWidth = mapJson?.layers[0]?.width;
   };
 };
 

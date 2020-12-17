@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.4" tiledversion="1.4.2" name="tileset-pokemon_dawn" tilewidth="16" tileheight="16" tilecount="14758" columns="94">
+<tileset version="1.4" tiledversion="1.4.3" name="tileset-pokemon_dawn" tilewidth="16" tileheight="16" tilecount="14758" columns="94">
  <image source="../../../images/tileset-pokemon_dawn.png" width="1504" height="2519"/>
  <terraintypes>
   <terrain name="dirt" tile="1604"/>
@@ -20,7 +20,6 @@
  <tile id="856" terrain=",3,,"/>
  <tile id="857" terrain="3,3,,"/>
  <tile id="858" terrain="3,,,"/>
- <tile id="859" terrain="3,3,3,3"/>
  <tile id="1504" terrain=",,,2"/>
  <tile id="1505" terrain=",,2,2"/>
  <tile id="1506" terrain=",,2,"/>
@@ -44,11 +43,9 @@
  <tile id="1692" terrain=",2,,"/>
  <tile id="1693" terrain="2,2,,"/>
  <tile id="1694" terrain="2,,,"/>
- <tile id="1695" terrain="2,2,2,2"/>
  <tile id="1697" terrain=",0,,"/>
  <tile id="1698" terrain="0,0,,"/>
  <tile id="1699" terrain="0,,,"/>
- <tile id="1700" terrain="0,0,0,0"/>
  <tile id="2647" terrain=",,,1">
   <objectgroup draworder="index" id="2">
    <object id="1" x="1.8125" y="1.8125" width="14.3125" height="14.375"/>
@@ -99,5 +96,4 @@
    <object id="1" x="0.125" y="0.0625" width="14.125" height="14"/>
   </objectgroup>
  </tile>
- <tile id="2838" terrain="1,1,1,1"/>
 </tileset>

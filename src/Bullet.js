@@ -1,6 +1,6 @@
 let canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
-let bulletSpeed = 30;
+let bulletSpeed = 10;
 let width = 16;
 let height = 16;
 let bulletImage = new Image();
@@ -40,11 +40,11 @@ let Bullet = function (props) {
     // ctx.lineWidth = "1px";
     // ctx.fillRect(this.x, this.y, this.width, this.height);
     // ctx.strokeRect(this.x - 1, this.y - 1, this.width + 1, this.height + 1);
-    let radgrad4 = ctx.createRadialGradient(this.x + 8, this.y + 8, 8, this.x, this.y, 32);
-    radgrad4.addColorStop(0, "rgba(0, 150, 255, 0.5)");
-    radgrad4.addColorStop(0.5, "rgba(0, 200, 255, 0.5)");
-    radgrad4.addColorStop(1, "rgba(255, 255, 255, 0.01)");
     if (this.direction == "right") {
+      let radgrad4 = ctx.createRadialGradient(this.x + 8, this.y + 8, 8, this.x, this.y, 32);
+      radgrad4.addColorStop(0, "rgba(0, 150, 255, 0.5)");
+      radgrad4.addColorStop(0.5, "rgba(0, 200, 255, 0.5)");
+      radgrad4.addColorStop(1, "rgba(255, 255, 255, 0.01)");
       ctx.fillStyle = radgrad4;
       ctx.beginPath();
       ctx.moveTo(this.x + 8, this.y);
@@ -53,6 +53,10 @@ let Bullet = function (props) {
       ctx.fill();
     }
     if (this.direction == "up") {
+      let radgrad4 = ctx.createRadialGradient(this.x + 8, this.y + 8, 8, this.x, this.y, 32);
+      radgrad4.addColorStop(0, "rgba(0, 150, 255, 0.5)");
+      radgrad4.addColorStop(0.5, "rgba(0, 200, 255, 0.5)");
+      radgrad4.addColorStop(1, "rgba(255, 255, 255, 0.01)");
       ctx.fillStyle = radgrad4;
       ctx.beginPath();
       ctx.moveTo(this.x, this.y + 8);
@@ -61,6 +65,10 @@ let Bullet = function (props) {
       ctx.fill();
     }
     if (this.direction == "left") {
+      let radgrad4 = ctx.createRadialGradient(this.x + 8, this.y + 8, 8, this.x, this.y, 32);
+      radgrad4.addColorStop(0, "rgba(0, 150, 255, 0.5)");
+      radgrad4.addColorStop(0.5, "rgba(0, 200, 255, 0.5)");
+      radgrad4.addColorStop(1, "rgba(255, 255, 255, 0.01)");
       ctx.fillStyle = radgrad4;
       ctx.beginPath();
       ctx.moveTo(this.x + 8, this.y);
@@ -69,6 +77,10 @@ let Bullet = function (props) {
       ctx.fill();
     }
     if (this.direction == "down") {
+      let radgrad4 = ctx.createRadialGradient(this.x + 8, this.y + 8, 8, this.x, this.y, 32);
+      radgrad4.addColorStop(0, "rgba(0, 150, 255, 0.5)");
+      radgrad4.addColorStop(0.5, "rgba(0, 200, 255, 0.5)");
+      radgrad4.addColorStop(1, "rgba(255, 255, 255, 0.01)");
       ctx.fillStyle = radgrad4;
       ctx.beginPath();
       ctx.moveTo(this.x, this.y + 8);
@@ -135,7 +147,6 @@ let Bullet = function (props) {
     label.x = this.x;
     label.y = this.y;
     // this.resetSx();
-    this.speed += 1;
   };
 };
 

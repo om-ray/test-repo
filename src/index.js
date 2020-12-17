@@ -30,6 +30,7 @@ let dateRowHeader = document.getElementById("dateRowHeaderBtn");
 let scoreRowHeader = document.getElementById("scoreRowHeaderBtn");
 let loader = document.getElementById("loader");
 let submitText = document.getElementById("submitText");
+let respawnBtn = document.getElementById("respawnBtn");
 let socket = io({ reconnection: false });
 let PlayerList = [];
 let LogIn = true;
@@ -318,6 +319,10 @@ document.addEventListener("visibilitychange", function () {
   }
 });
 
+respawnBtn.onclick = function () {
+  mainPlayer.respawn();
+};
+
 let getLeaderboardValues = function () {
   socket.emit("can i have the leaderboard values");
 };
@@ -543,21 +548,24 @@ let tileset = new Image();
 let viewport = new Viewport(0, 0, canvas.width, canvas.height);
 tileset.src = "../images/tileset-pokemon_dawn.png";
 let mapJson;
-let startX;
-let startY;
+let startX = 0;
+let startY = 0;
 let clippingWidth;
 let clippingHeight;
 let placeX = 0;
 let placeY = 0;
 let tileScale = 5;
-let mapWidth = 2000;
-let mapHeight = 2000;
+let mapWidth = mapJson?.layers[0]?.width;
+let mapHeight = mapJson?.layers[0]?.height;
 let tileSize = 16 * tileScale;
 let canvasWidthInTiles = Math.floor(canvas.width / tileSize);
 let canvasHeightInTiles = Math.floor(canvas.height / tileSize);
 let totalNumberOfNecessaryTiles = Math.floor(canvasHeightInTiles * canvasWidthInTiles) * mapWidth;
-let mainPlayerIndex = Math.floor((mainPlayer.x * mainPlayer.y) / tileSize) % (mapWidth * mapHeight);
+let mainPlayerIndexX = Math.floor((mainPlayer.x + mainPlayer.width / 2) / tileSize);
+let mainPlayerIndexY = Math.floor((mainPlayer.y + mainPlayer.height) / tileSize);
+let mainPlayerIndex = mainPlayerIndexX + mainPlayerIndexY * mapWidth;
 let leftMostIndex = Math.floor((viewport.x / tileSize) * (viewport.y / tileSize));
+let waterTiles = [2742, 2838, 2650, 2651, 2744, 2745, 2647, 2648, 2649, 2741, 2742, 2743, 2835, 2836, 2837];
 let xmlhttp = new XMLHttpRequest();
 xmlhttp.onreadystatechange = function () {
   if (this.readyState == 4 && this.status == 200) {
@@ -579,19 +587,115 @@ let updateMap = function () {
   for (let i = 0; i < mapJson.layers.length; i++) {
     for (let u = totalNumberOfNecessaryTiles; u >= leftMostIndex; u--) {
       let dataValues = mapJson.layers[i].data[u] - 1;
-      startX = (dataValues % 94) * 16;
-      startY = Math.floor(dataValues / 94) * 16;
+      startX = Math.ceil(((dataValues % 94) * 16) / 16) * 16;
+      startY = Math.ceil((Math.floor(dataValues / 94) * 16) / 16) * 16;
       clippingWidth = 16;
       clippingHeight = 16;
-      placeX = (u % mapJson.layers[i].width) * 16 * tileScale;
-      placeY = Math.floor(u / mapJson.layers[i].height) * 16 * tileScale;
+      placeX = (u % mapWidth) * 16 * tileScale;
+      placeY = Math.floor(u / mapHeight) * 16 * tileScale;
 
       if (in_viewport(placeX, placeY)) {
-        ctx.drawImage(tileset, Math.floor(startX), Math.floor(startY), clippingWidth, clippingHeight, placeX, placeY, tileSize, tileSize);
-        // ctx.strokeRect(placeX, placeY, clippingWidth * tileScale, clippingHeight * tileScale);
-        // ctx.fillText(u, placeX + 8, placeY + (clippingHeight * tileScale) / 2);
+        // console.log(startX, startY);
+        ctx.drawImage(tileset, startX, startY, clippingWidth, clippingHeight, Math.floor(placeX), Math.floor(placeY), tileSize, tileSize);
+        // }
+        // ctx.fillText(u, placeX, placeY + 8 * tileScale);
+        // ctx.strokeStyle = "black";
+        // ctx.strokeRect(
+        //   (mainPlayerIndex % mapWidth * 16 * tileScale,
+        //   Math.floor(mainPlayerIndex / mapHeight) * 16 * tileScale,
+        //   clippingWidth * tileScale,
+        //   clippingHeight * tileScale
+        // );
+        // ctx.strokeStyle = "red";
+        // ctx.strokeRect(
+        //   ((mainPlayerIndex + 1) % mapWidth * 16 * tileScale,
+        //   Math.floor((mainPlayerIndex + 1) / mapHeight) * 16 * tileScale,
+        //   clippingWidth * tileScale,
+        //   clippingHeight * tileScale
+        // );
+        // ctx.strokeRect(
+        //   ((mainPlayerIndex - mapWidth + 1) % mapWidth * 16 * tileScale,
+        //   Math.floor((mainPlayerIndex - mapWidth + 1) / mapHeight) * 16 * tileScale,
+        //   clippingWidth * tileScale,
+        //   clippingHeight * tileScale
+        // );
+        // ctx.strokeRect(
+        //   ((mainPlayerIndex - mapWidth) % mapWidth * 16 * tileScale,
+        //   Math.floor((mainPlayerIndex - mapWidth) / mapHeight) * 16 * tileScale,
+        //   clippingWidth * tileScale,
+        //   clippingHeight * tileScale
+        // );
+        // ctx.strokeRect(
+        //   ((mainPlayerIndex - 1) % mapWidth * 16 * tileScale,
+        //   Math.floor((mainPlayerIndex - 1) / mapHeight) * 16 * tileScale,
+        //   clippingWidth * tileScale,
+        //   clippingHeight * tileScale
+        // );
+        // ctx.strokeRect(
+        //   ((mainPlayerIndex - mapWidth - 1) % mapWidth * 16 * tileScale,
+        //   Math.floor((mainPlayerIndex - mapWidth - 1) / mapHeight) * 16 * tileScale,
+        //   clippingWidth * tileScale,
+        //   clippingHeight * tileScale
+        // );
+        // ctx.strokeRect(
+        //   ((mainPlayerIndex + mapWidth) % mapWidth * 16 * tileScale,
+        //   Math.floor((mainPlayerIndex + mapWidth) / mapHeight) * 16 * tileScale,
+        //   clippingWidth * tileScale,
+        //   clippingHeight * tileScale
+        // );
       }
     }
+  }
+  if (waterTiles.includes(mapJson.layers[1]?.data[mainPlayerIndex] - 1) || waterTiles.includes(mapJson.layers[0].data[mainPlayerIndex] - 1)) {
+    if (
+      (mainPlayer.direction.right || mainPlayer.lastDirection == "right") &&
+      (waterTiles.includes(mapJson.layers[1]?.data[mainPlayerIndex + 1] - 1) ||
+        waterTiles.includes(mapJson.layers[1]?.data[mainPlayerIndex - mapWidth + 1] - 1) ||
+        waterTiles.includes(mapJson.layers[0].data[mainPlayerIndex + 1] - 1) ||
+        waterTiles.includes(mapJson.layers[0].data[mainPlayerIndex - mapWidth + 1] - 1))
+    ) {
+      mainPlayer.collisionDirection.right = true;
+    } else {
+      mainPlayer.collisionDirection.right = false;
+    }
+    if (
+      (mainPlayer.direction.up || mainPlayer.lastDirection == "up") &&
+      (waterTiles.includes(mapJson.layers[1]?.data[mainPlayerIndex - mapWidth] - 1) ||
+        waterTiles.includes(mapJson.layers[0].data[mainPlayerIndex - mapWidth] - 1))
+    ) {
+      mainPlayer.collisionDirection.up = true;
+    } else {
+      mainPlayer.collisionDirection.up = false;
+    }
+    if (
+      (mainPlayer.direction.left || mainPlayer.lastDirection == "left") &&
+      (waterTiles.includes(mapJson.layers[1]?.data[mainPlayerIndex - 1] - 1) ||
+        waterTiles.includes(mapJson.layers[1]?.data[mainPlayerIndex - mapWidth - 1] - 1) ||
+        waterTiles.includes(mapJson.layers[0].data[mainPlayerIndex - 1] - 1) ||
+        waterTiles.includes(mapJson.layers[0].data[mainPlayerIndex - mapWidth - 1] - 1))
+    ) {
+      mainPlayer.collisionDirection.left = true;
+    } else {
+      mainPlayer.collisionDirection.left = false;
+    }
+    if (
+      (mainPlayer.direction.down || mainPlayer.lastDirection == "down") &&
+      (waterTiles.includes(mapJson.layers[1]?.data[mainPlayerIndex + mapWidth] - 1) ||
+        waterTiles.includes(mapJson.layers[0].data[mainPlayerIndex + mapWidth] - 1))
+    ) {
+      mainPlayer.collisionDirection.down = true;
+    } else {
+      mainPlayer.collisionDirection.down = false;
+    }
+    if (mainPlayer.justRespawned == true || firstTime) {
+      mainPlayer.justRespawned = false;
+      mainPlayer.respawn();
+    }
+  } else {
+    mainPlayer.collisionDirection.right = false;
+    mainPlayer.collisionDirection.up = false;
+    mainPlayer.collisionDirection.left = false;
+    mainPlayer.collisionDirection.down = false;
   }
 };
 
@@ -725,17 +829,20 @@ let drawingLoop = function () {
   ctx.save();
   viewport.w = canvas.width;
   viewport.h = canvas.height;
-  viewport.scroll(mainPlayer.x - canvas.width / 2, mainPlayer.y - canvas.height / 2);
-  ctx.translate(-1 * viewport.x, -1 * viewport.y);
-  ctx.rect(viewport.x + 3, viewport.y + 3, viewport.w - 6, viewport.h - 6);
-  ctx.clip();
-  ctx.strokeStyle = "red";
-  ctx.lineWidth = "3px";
-  ctx.stroke();
+  viewport.scroll(Math.floor(mainPlayer.x - canvas.width / 2), Math.floor(mainPlayer.y - canvas.height / 2));
+  ctx.translate(Math.floor(-1 * viewport.x), Math.floor(-1 * viewport.y));
+  // ctx.rect(viewport.x, viewport.y, viewport.w, viewport.h);
+  // ctx.clip();
+  // ctx.strokeStyle = "red";
+  // ctx.lineWidth = "3px";
+  // ctx.stroke();
+  mapWidth = mapJson?.layers[0]?.width;
+  mapHeight = mapJson?.layers[0]?.height;
   leftMostIndex = Math.floor((viewport.x / tileSize) * (viewport.y / tileSize));
-  mainPlayerIndex = Math.floor((mainPlayer.x * mainPlayer.y) % (mapWidth * mapHeight));
+  mainPlayerIndexX = Math.floor((mainPlayer.x + mainPlayer.width / 2) / tileSize);
+  mainPlayerIndexY = Math.floor((mainPlayer.y + mainPlayer.height) / tileSize);
+  mainPlayerIndex = mainPlayerIndexX + mainPlayerIndexY * mapWidth;
   totalNumberOfNecessaryTiles = Math.floor((canvas.width / tileSize) * (canvas.height / tileSize)) * mapWidth;
-  console.log(totalNumberOfNecessaryTiles, mapWidth);
   updateMap();
   drawTime();
   PlayerList.forEach((player) => {
@@ -754,5 +861,8 @@ let Game_loop = function () {
 setInterval(() => {
   if (loggedIn) {
     Game_loop();
+    if (firstTime) {
+      firstTime = false;
+    }
   }
 }, 1000 / 60);
