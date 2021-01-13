@@ -62,6 +62,7 @@ let Player = function (props) {
   this.sprite = sprites[0]();
   this.username = p.username;
   this.email = p.email;
+  this.drawn = false;
   this.type = p.type;
   this.x = p.x;
   this.y = p.y;
@@ -73,6 +74,8 @@ let Player = function (props) {
   this.keys = p.keys;
   this.timesReloaded = 0;
   this.needsToReload = false;
+  this.above = false;
+  this.below = true;
   this.healthMax = 100;
   this.score = 0;
   this.sx = 0;
@@ -108,8 +111,18 @@ let Player = function (props) {
   this.reloading = false;
 
   this.draw = () => {
-    if (this.loggedIn == true) {
-      ctx.drawImage(Img.player, this.sx, this.sy, this.width, this.height, this.x, this.y, this.width, this.height);
+    if (this.loggedIn == true && this.drawn == false) {
+      ctx.drawImage(
+        Img.player,
+        this.sx,
+        this.sy,
+        this.width,
+        this.height,
+        this.x,
+        this.y,
+        this.width,
+        this.height
+      );
       // if (this.loggedIn == false) {
       // ctx.drawImage(Img.forcefield, this.x - this.width / 1.4, this.y - this.height / 4, this.height + 30, this.height + 30);
       // }
@@ -117,7 +130,13 @@ let Player = function (props) {
         ctx.fillStyle = "black";
         ctx.font = "13px courier";
         ctx.fillText("This player is AFK", this.x - 50, this.y - 20);
-        ctx.drawImage(Img.forcefield, this.x - this.width / 1.4, this.y - this.height / 4, this.height + 30, this.height + 30);
+        ctx.drawImage(
+          Img.forcefield,
+          this.x - this.width / 1.4,
+          this.y - this.height / 4,
+          this.height + 30,
+          this.height + 30
+        );
       }
       for (let i in this.bulletList) {
         this.bulletList[i].move();
@@ -126,6 +145,7 @@ let Player = function (props) {
       this.drawAccesories();
       this.resetBulletlist();
       this.action();
+      // this.drawn = true;
     }
   };
 
@@ -208,10 +228,6 @@ let Player = function (props) {
     if (this.reloading) {
       if (this.ammoLeft <= this.ammoLimit) {
         this.attacking = false;
-        for (let i in this.bulletList) {
-          let arr = this.bulletList[i];
-          arr.erase();
-        }
         this.bulletList.unshift();
         this.ammoLeft += 1;
       }
@@ -264,13 +280,13 @@ let Player = function (props) {
       this.direction.left = false;
       // ctx.translate(-this.speed, 0);
     }
-    if (!this.direction.up && !this.direction.left && !this.direction.down && !this.direction.right) {
-      // this.prevX = this.x;
-      // this.prevY = this.y;
-    } else if (typeof this.prevX == "undefined" || typeof this.prevY == "undefined") {
-      this.prevX = this.x;
-      this.prevY = this.y;
-    }
+    // if (!this.direction.up && !this.direction.left && !this.direction.down && !this.direction.right) {
+    //   // this.prevX = this.x;
+    //   // this.prevY = this.y;
+    // } else if (typeof this.prevX == "undefined" || typeof this.prevY == "undefined") {
+    //   this.prevX = this.x;
+    //   this.prevY = this.y;
+    // }
     if (this.attacking && this.ammoLeft !== 0 && !this.reloading) {
       let newBullet = new Bullet({
         x: this.x + this.width / 4,
@@ -278,6 +294,7 @@ let Player = function (props) {
         direction: this.lastDirection,
         shooter: this.id,
         substitute: false,
+        index: this.bulletList.length - 1,
       });
 
       this.bulletList.push(newBullet);
@@ -291,8 +308,8 @@ let Player = function (props) {
 
   this.respawn = function () {
     this.health = this.healthMax;
-    this.x = Math.abs(Math.floor(Math.random() * (mapWidth * (16 * 5) - 16 * 5)));
-    this.y = Math.abs(Math.floor(Math.random() * (mapWidth * (16 * 5) - 16 * 5)));
+    this.x = Math.floor(Math.random() * (mapWidth * (16 * 5) - 16 * 5 * 2));
+    this.y = Math.floor(Math.random() * (mapWidth * (16 * 5) - 16 * 5 * 2));
     this.direction.up = false;
     this.direction.down = false;
     this.direction.right = false;
@@ -301,6 +318,12 @@ let Player = function (props) {
   };
 
   this.update = function () {
+    if (!this.x) {
+      this.respawn();
+    }
+    if (!this.y) {
+      this.respawn();
+    }
     this.collisionBox = {
       x: this.x,
       y: this.y,
@@ -320,6 +343,11 @@ let Player = function (props) {
       this.needsToReload = true;
       this.attacking = false;
     }
+    if (this.below) {
+      this.above = false;
+    } else if (this.above) {
+      this.below = false;
+    }
     mapWidth = mapJson?.layers[0]?.width;
   };
 };
@@ -336,7 +364,14 @@ let HealthBar = function (props) {
   this.draw = function () {
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.radius, -Math.PI / 2, Math.radians(this.value * 3.6) - Math.PI / 2, false);
-    ctx.arc(this.x, this.y, this.radius - this.thickness, Math.radians(this.value * 3.6) - Math.PI / 2, -Math.PI / 2, true);
+    ctx.arc(
+      this.x,
+      this.y,
+      this.radius - this.thickness,
+      Math.radians(this.value * 3.6) - Math.PI / 2,
+      -Math.PI / 2,
+      true
+    );
     ctx.lineWidth = 1;
     ctx.fillStyle = "black";
     ctx.font = "10px courier";
@@ -369,7 +404,14 @@ let AmmoBar = function (props) {
   this.draw = function () {
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.radius, -Math.PI / 2, Math.radians(this.value * 0.72) - Math.PI / 2, false);
-    ctx.arc(this.x, this.y, this.radius - this.thickness, Math.radians(this.value * 0.72) - Math.PI / 2, -Math.PI / 2, true);
+    ctx.arc(
+      this.x,
+      this.y,
+      this.radius - this.thickness,
+      Math.radians(this.value * 0.72) - Math.PI / 2,
+      -Math.PI / 2,
+      true
+    );
     ctx.lineWidth = 1;
     ctx.fillStyle = "black";
     ctx.font = "10px courier";

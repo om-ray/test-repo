@@ -371,10 +371,20 @@ better-assert@~1.0.0:
   dependencies:
     callsite "1.0.0"
 
+bin-trees@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/bin-trees/-/bin-trees-1.0.4.tgz#fd1c795c08c8c6074e840a46f332aa1c845741c6"
+  integrity sha512-tVCCbDJJLZcZpyAcsHKuiQoUdjezUiz0B+nCtvnQnxoHWBYuC9zFLcveDS1Hp7s8zAEJam4iPjxiHrMZFJ4Z0A==
+
 binary-extensions@^2.0.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/binary-extensions/-/binary-extensions-2.1.0.tgz#30fa40c9e7fe07dbc895678cd287024dea241dd9"
   integrity sha512-1Yj8h9Q+QDF5FzhMs/c9+6UntbD5MkRfRwac8DoEm9ZfUBZ7tZ55YcGVAzEe4bXsdQHEk+s9S5wsOKVdZrw0tQ==
+
+bintrees@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/bintrees/-/bintrees-1.0.2.tgz#49f896d6e858a4a499df85c38fb399b9aff840f8"
+  integrity sha1-SfiW1uhYpKSZ34XDj7OZua/4QPg=
 
 bl@^2.2.1:
   version "2.2.1"

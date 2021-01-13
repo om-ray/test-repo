@@ -21,6 +21,7 @@ let Bullet = function (props) {
   this.Image = bulletImage;
   this.sx = 0;
   this.sy = 0;
+  this.index = p.index;
   this.collisionBox = {
     x: this.x,
     y: this.y,

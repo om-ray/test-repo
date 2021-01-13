@@ -31,6 +31,10 @@ export let createPlayer = function (type) {
   return newPlayer;
 };
 
+export let basename = function (path) {
+  return path.split("/").reverse()[0];
+};
+
 export function roundRect(ctx, x, y, width, height, radius, fill, stroke, fillcolor, strokecolor) {
   if (typeof stroke === "undefined") {
     stroke = true;
@@ -149,6 +153,14 @@ export let actionLogic = function (Player) {
   Player.action();
 };
 
+export let runXMLHttpRequest = function (request, cb, type, route) {
+  request.onreadystatechange = function () {
+    cb(this);
+  };
+  request.open(type, route, true);
+  request.send();
+};
+
 export let checkCollision = function (object1, object2) {
   let x1 = object1.collisionBox.x;
   let y1 = object1.collisionBox.y;
@@ -163,7 +175,8 @@ export let checkCollision = function (object1, object2) {
   // ctx.strokeRect(x1, y1, xMax1 - x1, yMax1 - y1);
   // ctx.strokeRect(x2, y2, xMax2 - x2, yMax2 - y2);
 
-  if (x1 <= xMax2 && xMax1 >= x2 && y1 <= yMax2 && yMax1 >= y2) {
+  if (x1 < xMax2 && xMax1 > x2 && y1 < yMax2 && yMax1 > y2) {
     return true;
   }
+  return false;
 };

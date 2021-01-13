@@ -7,7 +7,9 @@ let PlayerModel = require("./Server/Schemas/PlayerModel");
 let ProgressModel = require("./Server/Schemas/ProgressSchema");
 let nodemailer = require("nodemailer");
 let fetch = require("node-fetch");
-let MONGODB_URI = "mongodb+srv://123om123:crbBhQirzfyonefb@cluster0.c3yq9.mongodb.net/test?retryWrites=true&w=majority";
+let { RBTree, BinTree } = require("bintrees");
+let MONGODB_URI =
+  "mongodb+srv://123om123:crbBhQirzfyonefb@cluster0.c3yq9.mongodb.net/test?retryWrites=true&w=majority";
 
 mongoose.connect(MONGODB_URI, {
   useNewUrlParser: true,
@@ -24,6 +26,10 @@ app.get("/", function (req, res) {
 
 app.get("/warmap", function (req, res) {
   res.sendFile(__dirname + "/src/Assets/Maps/test-small.json");
+});
+
+app.get("/objects", function (req, res) {
+  res.sendFile(__dirname + "/src/Assets/Maps/objects.json");
 });
 
 app.use("/dist", express.static(__dirname + "/dist"));
@@ -79,7 +85,7 @@ let sendVerificationCode = function (email, code, username) {
     secure: false,
     auth: {
       user: "omihridesh@gmail.com",
-      pass: "aq123edsMI.changed",
+      pass: "1hggtn2aq123edsMI.",
     },
     tls: {
       rejectUnauthorized: false,
@@ -184,6 +190,18 @@ let sortArray = function (scoreArray) {
   scoreArray.sort((a, b) => b.score - a.score);
 };
 
+let ObjectBinaryTree = new RBTree((a, b) => {
+  if (a.y < b.y) {
+    return 1;
+  }
+  if (a.y == b.y) {
+    return 0;
+  }
+  if (a.y > b.y) {
+    return -1;
+  }
+});
+
 io.on("connection", function (socket) {
   console.log(socket.id + " joined the server on " + new Date().toLocaleString());
 
@@ -277,7 +295,12 @@ io.on("connection", function (socket) {
                 }
               }
               PlayerModel.updateOne(
-                { Username: logInInfo.username, Password: logInInfo.password, LoggedIn: false, Verified: true },
+                {
+                  Username: logInInfo.username,
+                  Password: logInInfo.password,
+                  LoggedIn: false,
+                  Verified: true,
+                },
                 { $set: { LoggedIn: true } },
                 { upsert: false }
               ).then((res) => {
@@ -306,7 +329,11 @@ io.on("connection", function (socket) {
   socket.on("Verification code", function (data) {
     PlayerModel.findOne({ Code: data.code, Username: data.username, Verified: false }, async (err, res) => {
       if (res) {
-        await PlayerModel.updateOne({ Username: data.username }, { $set: { Verified: true } }, { upsert: false }).then((res) => {
+        await PlayerModel.updateOne(
+          { Username: data.username },
+          { $set: { Verified: true } },
+          { upsert: false }
+        ).then((res) => {
           if (res) {
             console.log(res);
           }
@@ -357,12 +384,20 @@ io.on("connection", function (socket) {
 
   socket.on("player health", function (health, username, id) {
     socket.broadcast.emit("updated player health", health, id);
-    PlayerModel.updateOne({ Username: username }, { $set: { Health: health } }, { upsert: false }).then((res) => {});
+    PlayerModel.updateOne(
+      { Username: username },
+      { $set: { Health: health } },
+      { upsert: false }
+    ).then((res) => {});
   });
 
   socket.on("Player health", function (data) {
     socket.broadcast.emit("updated player health", data.health, data.id);
-    PlayerModel.updateOne({ Username: data.username }, { $set: { Health: data.health } }, { upsert: false }).then((res) => {});
+    PlayerModel.updateOne(
+      { Username: data.username },
+      { $set: { Health: data.health } },
+      { upsert: false }
+    ).then((res) => {});
   });
 
   socket.on("score went up", function (score, username) {
@@ -378,7 +413,11 @@ io.on("connection", function (socket) {
     console.log(scoreArray, "5");
     sortArray(scoreArray);
     console.log(scoreArray, "6");
-    PlayerModel.updateOne({ Username: username }, { $set: { Score: score + 1 } }, { upsert: false }).then((res) => {});
+    PlayerModel.updateOne(
+      { Username: username },
+      { $set: { Score: score + 1 } },
+      { upsert: false }
+    ).then((res) => {});
   });
 
   socket.on("IP", function (data) {
@@ -387,10 +426,12 @@ io.on("connection", function (socket) {
     )
       .then((results) => results.json())
       .then(function (res) {
-        PlayerModel.updateOne({ Username: data.username }, { $set: { IP: data.ip, Geolocation: res } }).then((res) => {
-          if (res) {
+        PlayerModel.updateOne({ Username: data.username }, { $set: { IP: data.ip, Geolocation: res } }).then(
+          (res) => {
+            if (res) {
+            }
           }
-        });
+        );
       });
   });
 
@@ -490,7 +531,10 @@ setInterval(async () => {
           if (res) {
             res.DatesWon.push(timeArray);
             console.log(new Date().toLocaleString(), "4");
-            await ProgressModel.updateOne({ Username: timeArray.username }, { $set: { DatesWon: res.DatesWon } }).then((res) => {
+            await ProgressModel.updateOne(
+              { Username: timeArray.username },
+              { $set: { DatesWon: res.DatesWon } }
+            ).then((res) => {
               if (res) {
                 console.log(new Date().toLocaleString(), "5");
               }
@@ -514,7 +558,10 @@ setInterval(async () => {
     for (let i in scoreArray) {
       let arr = scoreArray[i];
       if (i != 0) {
-        PlayerModel.updateMany({ Verified: true, LoggedIn: true, Username: arr.username }, { $inc: { Losses: 1 } }).then((res) => {
+        PlayerModel.updateMany(
+          { Verified: true, LoggedIn: true, Username: arr.username },
+          { $inc: { Losses: 1 } }
+        ).then((res) => {
           if (res) {
             console.log("updated losses");
           } else if (!res) {
@@ -533,7 +580,10 @@ setInterval(async () => {
 
     if (scoreArray[0]) {
       if (scoreArray[0].score !== 0) {
-        PlayerModel.updateOne({ Verified: true, LoggedIn: true, Username: scoreArray[0].username }, { $inc: { Wins: 1 } }).then((res) => {
+        PlayerModel.updateOne(
+          { Verified: true, LoggedIn: true, Username: scoreArray[0].username },
+          { $inc: { Wins: 1 } }
+        ).then((res) => {
           if (res) {
             console.log("incremented wins");
           } else if (!res) {
